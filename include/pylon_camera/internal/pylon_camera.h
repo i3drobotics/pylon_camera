@@ -68,7 +68,7 @@ public:
     virtual bool grab(std::vector<uint8_t>& image);
 
     virtual bool grab(uint8_t* image);
-
+    virtual bool grab(std::vector<uint8_t>& image, ros::Time& stamp);
     virtual bool setShutterMode(const pylon_camera::SHUTTER_MODE& mode);
 
     virtual bool setROI(const sensor_msgs::RegionOfInterest target_roi,
@@ -155,6 +155,15 @@ protected:
     typedef typename CameraTraitT::GainType GainType;
     typedef typename CameraTraitT::ShutterModeEnums ShutterModeEnums;
     typedef typename CameraTraitT::UserOutputSelectorEnums UserOutputSelectorEnums;
+    typedef typename CameraTraitT::ChunkSelectorEnums ChunkSelectorEnums;
+    typedef typename CameraTraitT::GevIEEE1588StatusEnums GevIEEE1588StatusEnums;
+    typedef typename CameraTraitT::GevIEEE1588StatusLatchedEnums GevIEEE1588StatusLatchedEnums;
+    typedef typename CameraTraitT::TriggerSelectorEnums TriggerSelectorEnums;
+    typedef typename CameraTraitT::TriggerModeEnums TriggerModeEnums;
+    typedef typename CameraTraitT::AcquisitionModeEnums AcquisitionModeEnums;
+    typedef typename CameraTraitT::TriggerSourceEnums TriggerSourceEnums;
+    typedef typename CameraTraitT::TriggerActivationEnums TriggerActivationEnums;
+    typedef typename CameraTraitT::ExposureModeEnums ExposureModeEnums;
 
     CBaslerInstantCameraT* cam_;
 
@@ -177,13 +186,17 @@ protected:
 
     virtual bool setupSequencer(const std::vector<float>& exposure_times,
                                 std::vector<float>& exposure_times_set);
+    virtual bool enableTimestampChunk();
+
+    virtual bool enableIEEE1588PTP();
+    virtual bool enableHardwareTrigger();
 };
 
 }  // namespace pylon_camera
 
 #include <pylon_camera/internal/impl/pylon_camera_base.hpp>
-#include <pylon_camera/internal/impl/pylon_camera_usb.hpp>
-#include <pylon_camera/internal/impl/pylon_camera_dart.hpp>
+//#include <pylon_camera/internal/impl/pylon_camera_usb.hpp>
+//#include <pylon_camera/internal/impl/pylon_camera_dart.hpp>
 #include <pylon_camera/internal/impl/pylon_camera_gige.hpp>
 
 #endif  // PYLON_CAMERA_INTERNAL_PYLON_CAMERA_H

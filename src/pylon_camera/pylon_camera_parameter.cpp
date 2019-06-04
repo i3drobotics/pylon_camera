@@ -64,7 +64,11 @@ PylonCameraParameter::PylonCameraParameter() :
         mtu_size_(3000),
         inter_pkg_delay_(1000),
         shutter_mode_(SM_DEFAULT),
-        auto_flash_(false)
+        auto_flash_(false),
+        fetch_camera_timestamp_(false),
+        enable_ieee_1588_ptp_(false),
+        enable_hardware_trigger_(false)
+
 {}
 
 PylonCameraParameter::~PylonCameraParameter()
@@ -193,7 +197,7 @@ void PylonCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
                 nh.getParam("brightness_continuous", brightness_continuous_);
                 std::cout << "brightness is continuous" << std::endl;
             }
-            if ( nh.hasParam("exposure_auto") )
+           if ( nh.hasParam("exposure_auto") )
             {
                 nh.getParam("exposure_auto", exposure_auto_);
                 std::cout << "exposure is set to auto" << std::endl;
@@ -206,7 +210,16 @@ void PylonCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
         }
     }
     // ##########################
-
+    if ( nh.hasParam("fetch_camera_timestamp"))
+    {
+        nh.getParam("fetch_camera_timestamp", fetch_camera_timestamp_);
+    }
+    if( nh.hasParam("enable_ieee_1588_ptp")){
+        nh.getParam("enable_ieee_1588_ptp",enable_ieee_1588_ptp_);
+    }
+    if( nh.hasParam("enable_hardware_trigger")){
+        nh.getParam("enable_hardware_trigger",enable_hardware_trigger_);
+    }
     nh.param<double>("exposure_search_timeout", exposure_search_timeout_, 5.);
     nh.param<double>("auto_exposure_upper_limit", auto_exp_upper_lim_, 10000000.);
 

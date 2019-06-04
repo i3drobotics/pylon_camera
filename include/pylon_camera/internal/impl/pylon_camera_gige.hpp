@@ -52,9 +52,18 @@ struct GigECameraTrait
     typedef int64_t AutoTargetBrightnessValueType;
     typedef Basler_GigECameraParams::ShutterModeEnums ShutterModeEnums;
     typedef Basler_GigECamera::UserOutputSelectorEnums UserOutputSelectorEnums;
+    typedef Basler_GigECamera::ChunkSelectorEnums ChunkSelectorEnums;
+    typedef Basler_GigECamera::GevIEEE1588StatusEnums GevIEEE1588StatusEnums;
+    typedef Basler_GigECamera::GevIEEE1588StatusLatchedEnums GevIEEE1588StatusLatchedEnums;
     typedef Basler_GigECamera::LineSelectorEnums LineSelectorEnums;
     typedef Basler_GigECamera::LineModeEnums LineModeEnums;
     typedef Basler_GigECamera::LineSourceEnums LineSourceEnums;
+    typedef Basler_GigECamera::TriggerSelectorEnums TriggerSelectorEnums;
+    typedef Basler_GigECamera::TriggerModeEnums TriggerModeEnums;
+    typedef Basler_GigECamera::AcquisitionModeEnums AcquisitionModeEnums;
+    typedef Basler_GigECamera::TriggerSourceEnums TriggerSourceEnums;
+    typedef Basler_GigECamera::TriggerActivationEnums TriggerActivationEnums;
+    typedef Basler_GigECamera::ExposureModeEnums ExposureModeEnums;
 
     static inline AutoTargetBrightnessValueType convertBrightness(const int& value)
     {
@@ -130,6 +139,7 @@ bool PylonGigECamera::applyCamSpecificStartupSettings(const PylonCameraParameter
         cam_->UserSetSelector.SetValue(Basler_GigECameraParams::UserSetSelector_Default);
         cam_->UserSetLoad.Execute();
         // UserSetSelector_Default overrides Software Trigger Mode !!
+        
         cam_->TriggerSource.SetValue(Basler_GigECameraParams::TriggerSource_Software);
         cam_->TriggerMode.SetValue(Basler_GigECameraParams::TriggerMode_On);
 

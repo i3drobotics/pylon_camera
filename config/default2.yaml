@@ -3,14 +3,14 @@ camera_frame: pylon_camera
 
 #  The DeviceUserID of the camera. If empty, the first camera found in the
 #  device list will be used
-device_user_id: "1"
+device_user_id: "2"
 
 #  The CameraInfo URL (Uniform Resource Locator) where the optional intrinsic
 #  camera calibration parameters are stored. This URL string will be parsed
 #  from the ROS-CameraInfoManager:
 #  http://docs.ros.org/api/camera_info_manager/html/classcamera__info__manager_
 #  1_1CameraInfoManager.html#details
-camera_info_url: "file:///home/yasmeen/catkin_ws/src/pylon_camera/config/ost5.yaml"
+camera_info_url: ""
 
 #  The encoding of the pixels -- channel meaning, ordering, size
 #  taken from the list of strings in include/sensor_msgs/image_encodings.h
@@ -109,14 +109,14 @@ frame_rate: 10.0
 #  with the MTU size the network card supports. A value greater 3000
 #  should be good (1500 for RaspberryPI)
 # gige:
-mtu_size: 9000
+#mtu_size: 9000
 
 #  Only used for GigE cameras.
 #  The inter-package delay in ticks to prevent lost frames.
 #  For most of GigE-Cameras, a value of 1000 is reasonable.
 #  For cameras used on a RaspberryPI this value should be set to 11772.
 # gige:
-inter_pkg_delay: 0
+#inter_pkg_delay: 0
 #  The fetch_camera_timestamp flag controls
 #  how the time stamp inside each image's header is determined.
 #  If the flag is set to false, the timestamp corresponds to the ROS time
@@ -137,7 +137,4 @@ fetch_camera_timestamp: true
 #if no an error will rise.
 #By default the flag is set to false.
 enable_ieee_1588_ptp: true
-
-#The flag enables hardware trigger on Line1 for camera Acquistion
-#If it is false normal software triggering will be used
 enable_hardware_trigger: true

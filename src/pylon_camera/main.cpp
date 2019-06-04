@@ -50,7 +50,6 @@ int main(int argc, char **argv)
 
     // Main thread and brightness-service thread
     boost::thread th(boost::bind(&ros::spin));
-
     while ( ros::ok() )
     {
         pylon_camera_node.spin();
