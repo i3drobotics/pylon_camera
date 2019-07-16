@@ -113,6 +113,10 @@ public:
      */
     virtual bool enableHardwareTrigger()=0;
     /**
+     * Enables synchronous free run in gige cameras
+     */ 
+    virtual bool enableSynchronousFreeRun()=0;     
+    /**
      * Initializes the internal parameters of the PylonCamera instance.
      * @param parameters The PylonCameraParameter set to use
      * @return true if all parameters could be sent to the camera.
@@ -148,6 +152,12 @@ public:
 
     virtual bool setShutterMode(const pylon_camera::SHUTTER_MODE& mode) = 0;
 
+    virtual bool setWidth(int width_to_set)=0;
+    virtual bool setHeight(int height_to_set)=0;
+    virtual bool setOffsetX(int offset_x_to_set)=0;
+    virtual bool setOffsetY(int offset_y_to_set)=0;
+    virtual bool centerX()=0;
+    virtual bool centerY()=0;
     /**
      * Update area of interest in the camera image
      * @param target_roi the target roi
@@ -511,6 +521,20 @@ protected:
      * acquisition contains valid data
      */
     bool is_ready_;
+
+    /**
+     * Flag which indicates if IEEE 1588 ptp is set or no.
+     */
+    bool ptp_set_; 
+ 
+    /**
+     * Flag to set trigger mode off and start synchronous free run.
+     */
+    bool free_run_set_;
+    /**
+     * Flag which indicates if hardware trigger is set or no.
+     */
+    bool hardware_trigger_set_;  
 
     /**
      * True if the extended binary exposure search is running.

@@ -33,6 +33,7 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <stdio.h> 
 
 #include <pylon_camera/internal/pylon_camera.h>
 #include <pylon_camera/encoding_conversions.h>
@@ -40,8 +41,7 @@
 #include <pylon/gige/PylonGigEIncludes.h>
 #include <pylon/gige/ActionTriggerConfiguration.h>
 
-bool ptp_set=false;
-double frame_rate=5;
+
 namespace pylon_camera
 {
 
@@ -307,88 +307,9 @@ bool PylonCameraImpl<CameraTraitT>::enableTimestampChunk()
     cam_->StaticChunkNodeMapPoolSize = cam_->MaxNumBuffer.GetValue();
     return true;
 }
-template <typename CameraTraitT>
-bool PylonCameraImpl<CameraTraitT>::enableIEEE1588PTP()
-{
-    if (GenApi::IsWritable(cam_->GevIEEE1588)){
-      cam_->GevIEEE1588.SetValue(true);
-      ROS_INFO_STREAM("PTP Enabled");
-      ROS_INFO_STREAM(cam_->GevTimestampTickFrequency.GetValue());
-      cam_->GevIEEE1588DataSetLatch.Execute();
-     // ROS_INFO_STREAM(cam_->GevIEEE1588StatusLatched.GetValue());
-      while(cam_->GevIEEE1588StatusLatched.GetValue()!=(GevIEEE1588StatusLatchedEnums::GevIEEE1588StatusLatched_Slave)){
-                ROS_INFO_STREAM("Waiting to Enter Slave Mode");
-                sleep(1);
-          cam_->GevIEEE1588DataSetLatch.Execute();
-      }
-
-       ROS_INFO_STREAM(cam_->GevIEEE1588Status.GetValue());
-       
-    //    cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_FrameStart);
-    //    cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_Off);
-    //    cam_->SyncFreeRunTimerStartTimeLow.SetValue(0); 
-    //    cam_->SyncFreeRunTimerStartTimeHigh.SetValue(0);
-    //    cam_->SyncFreeRunTimerTriggerRateAbs.SetValue(frame_rate);
-    //    cam_->SyncFreeRunTimerUpdate.Execute();
-    //    cam_->SyncFreeRunTimerEnable.SetValue(true);
-
-    //   cam_->AcquisitionMode.SetValue(AcquisitionModeEnums::AcquisitionMode_Continuous);
-    //   cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_AcquisitionStart);
-    //   cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_On);
-    //   cam_->AcquisitionFrameCount.SetValue(5);
-    //   cam_->TriggerSource.SetValue(TriggerSourceEnums::TriggerSource_Action1);
-    //   cam_->ActionSelector.SetValue(1);
-    //   cam_->ActionDeviceKey.SetValue(4711);
-    //   cam_->ActionGroupKey.SetValue(1);
-    //   cam_->ActionGroupMask.SetValue(0xffffffff);
-    //   Pylon::CTlFactory& tlFactory = Pylon::CTlFactory::GetInstance();
-    //   Pylon::IGigETransportLayer *pTL = dynamic_cast<Pylon::IGigETransportLayer*>(tlFactory.CreateTl(Pylon::BaslerGigEDeviceClass));
-    //   while (1)
-    //   {
-      
-    //   pTL->IssueActionCommand(4711, 1, 0xffffffff, "255.255.255.255");
-    //   sleep(0.2);
-    //   }
-      
-      
 
 
 
-    //   cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_FrameStart);
-    //   cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_Off);
-      //   ROS_INFO_STREAM("trigger mode on");
-     //  ROS_INFO_STREAM(cam_->GevIEEE1588OffsetFromMaster.GetValue());
-    //    ROS_INFO_STREAM("Camera_clock_id:"+cam_->GevIEEE1588ClockId.GetValue());
-    //    ROS_INFO_STREAM("Master_clock_id:"+cam_->GevIEEE1588ParentClockId.GetValue());
-
-    }
-    else{
-        ROS_ERROR("The camere doesn't support IEEE_1588_PTP");
-        return false;
-    } 
-    
-
-    return true;
-}
-
-template <typename CameraTraitT>
-bool PylonCameraImpl<CameraTraitT>::enableHardwareTrigger(){
-    cam_->AcquisitionMode.SetValue(AcquisitionModeEnums::AcquisitionMode_Continuous);
-    cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_AcquisitionStart);
-    cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_Off);
-    // Disable the acquisition frame rate parameter (this will disable the camera’s
-    // internal frame rate control and allow you to control the frame rate with
-    // external frame start trigger signals)
-    cam_->AcquisitionFrameRateEnable.SetValue(false);
-    cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_FrameStart);
-    cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_On);
-    cam_->TriggerSource.SetValue (TriggerSourceEnums::TriggerSource_Line1);
-    cam_->TriggerActivation.SetValue(TriggerActivationEnums::TriggerActivation_RisingEdge);
-    cam_->ExposureMode.SetValue(ExposureModeEnums::ExposureMode_Timed);
-    ROS_INFO_STREAM("HARDWARE Trigger");
-   
-    return true;
-}
 
 template <typename CameraTraitT>
 void PylonCameraImpl<CameraTraitT>::disableAllRunningAutoBrightessFunctions()
@@ -430,6 +351,150 @@ bool PylonCameraImpl<CameraTraitT>::setupSequencer(const std::vector<float>& exp
 }
 
 template <typename CameraTraitT>
+bool PylonCameraImpl<CameraTraitT>::setWidth(int width_to_set)
+{
+   
+    try
+    {
+    if ( GenApi::IsAvailable(cam_->Width)){
+            int64_t max_image_width = cam_->WidthMax.GetValue();
+            int64_t min_image_width = cam_->Width.GetMin();
+
+            //resetting to avoid exceptions
+            cam_->OffsetX.SetValue(0);
+            cam_->Width.SetValue(max_image_width);
+            
+
+            if (width_to_set > max_image_width)
+            {
+                ROS_WARN_STREAM("Desired width("
+                                << width_to_set << ") unreachable! Setting to upper "
+                                << "limit: " << max_image_width);
+                width_to_set = max_image_width;
+            }
+            else if (width_to_set < min_image_width)
+            {
+                ROS_WARN_STREAM("Desired width("
+                                << width_to_set << ") unreachable! Setting to lower "
+                                << "limit: " << min_image_width);
+                width_to_set = min_image_width;
+            }
+            cam_->Width.SetValue(width_to_set);    
+            ROS_INFO_STREAM("Width for ROI set to "<< width_to_set);
+
+           
+                             
+    }else{
+            ROS_WARN_STREAM("Camera does not support area of interest Width. Will keep the "
+                            << "current settings");
+           
+    }
+    }
+    catch ( const GenICam::GenericException &e )
+    {
+        ROS_ERROR_STREAM("An exception while setting target area of interest "
+                << "(width: " << width_to_set << " "
+                << e.GetDescription());     
+                   return false;
+    }
+    return true;
+}
+
+template <typename CameraTraitT>
+bool PylonCameraImpl<CameraTraitT>::setHeight(int height_to_set){
+        try
+    {
+    if ( GenApi::IsAvailable(cam_->Height)){
+            int64_t max_image_height= cam_->HeightMax.GetValue();
+            int64_t min_image_height = cam_->Height.GetMin();
+            //resetting to avoid exceptions
+            cam_->OffsetY.SetValue(0);
+            cam_->Height.SetValue(max_image_height);
+            if (height_to_set > max_image_height)
+            {
+                ROS_WARN_STREAM("Desired height("
+                                << height_to_set << ") unreachable! Setting to upper "
+                                << "limit: " << max_image_height);
+                height_to_set = max_image_height;
+            }
+            else if (height_to_set < min_image_height)
+            {
+                ROS_WARN_STREAM("Desired height("
+                                << height_to_set << ") unreachable! Setting to lower "
+                                << "limit: " << min_image_height);
+                height_to_set = min_image_height;
+            }
+            cam_->Height.SetValue(height_to_set);
+            ROS_INFO_STREAM("Height for ROI set to "<< height_to_set);
+
+    }else{
+            ROS_WARN_STREAM("Camera does not support area of interest Height. Will keep the "
+                            << "current settings");
+           
+    }
+    }
+    catch ( const GenICam::GenericException &e )
+    {
+         ROS_ERROR_STREAM("An exception while setting target area of interest "
+                << "(Height: " << height_to_set << " "
+                << e.GetDescription()); 
+        return false;
+    }
+    return true;
+}
+
+template <typename CameraTraitT>
+bool PylonCameraImpl<CameraTraitT>::setOffsetX(int offsetx){
+    return true;
+}
+
+template <typename CameraTraitT>
+bool PylonCameraImpl<CameraTraitT>::setOffsetY(int offsety){
+    return true;
+}
+
+template <typename CameraTraitT>
+bool PylonCameraImpl<CameraTraitT>::centerX(){
+    try{
+    if ( GenApi::IsAvailable(cam_->CenterX)){
+        cam_->CenterX.SetValue(true);
+        ROS_INFO_STREAM("AOI Center X is enabled ignoring any preset offset x");
+
+    }else{
+        ROS_WARN_STREAM("Camera does not support area of interest Center X. Will keep the "
+                << "current settings");
+    }
+
+    }catch ( const GenICam::GenericException &e ){
+         ROS_ERROR_STREAM("An exception while setting target area of interest "
+                << "(Center X: "
+                << e.GetDescription());         
+    return false;
+    }
+    return true;
+}
+
+template <typename CameraTraitT>
+bool PylonCameraImpl<CameraTraitT>::centerY(){
+    try{
+    if ( GenApi::IsAvailable(cam_->CenterY)){
+        cam_->CenterY.SetValue(true);
+        ROS_INFO_STREAM("AOI Center Y is enabled ignoring any preset offset y");
+    }else{
+        ROS_WARN_STREAM("Camera does not support area of interest Center Y. Will keep the "
+                << "current settings");
+    }
+    }catch ( const GenICam::GenericException &e ){
+         ROS_ERROR_STREAM("An exception while setting target area of interest "
+                << "(Center Y: "
+                << e.GetDescription());        
+        return false;
+    }
+    return true;
+}
+
+
+template <typename CameraTraitT>
 bool PylonCameraImpl<CameraTraitT>::startGrabbing(const PylonCameraParameter& parameters)
 {
     try
@@ -438,47 +503,51 @@ bool PylonCameraImpl<CameraTraitT>::startGrabbing(const PylonCameraParameter& pa
         {
             setShutterMode(parameters.shutter_mode_);
         }
-         if ( parameters.frameRate() )
-        {
-           if ( parameters.frameRate() < 0 && parameters.frameRate() != -1 )
-             {
-                frame_rate = 5.0;
-      
-             }else
-             {
-                frame_rate=parameters.frameRate();
-             }
-           //ROS_INFO_STREAM(frame_rate);
-         }
-        
-        if (parameters.enable_ieee_1588_ptp_){
-            ptp_set=true;
-           
-            enableIEEE1588PTP();
-        }  
-        
+
         if (parameters.fetch_camera_timestamp_) {
            
             enableTimestampChunk();
         }
-        if (parameters.enable_hardware_trigger_){
-            enableHardwareTrigger();
-        }
+
         available_image_encodings_ = detectAvailableImageEncodings();
         if ( !setImageEncoding(parameters.imageEncoding()) )
         {
             return false;
         }
+
+        if(parameters.width_to_set_){
+            setWidth(parameters.width_to_set_);
+        }
+
+        if(parameters.height_to_set_){
+            setHeight(parameters.height_to_set_);
+        }
+
+        if(parameters.offset_x_to_set_){
+            setOffsetX(parameters.offset_x_to_set_);
+        }
+
+        if(parameters.offset_y_to_set_){
+            setOffsetY(parameters.offset_y_to_set_);
+        } 
+
+        if(parameters.center_x_){
+            centerX();
+        }
+        if(parameters.center_y_){
+            centerY();
+        }
+
          ROS_INFO_STREAM("Before startGrabbing: ");
+
         cam_->StartGrabbing();
         user_output_selector_enums_ = detectAndCountNumUserOutputs();
         device_user_id_ = cam_->DeviceUserID.GetValue();
         img_rows_ = static_cast<size_t>(cam_->Height.GetValue());
         img_cols_ = static_cast<size_t>(cam_->Width.GetValue());
         img_size_byte_ =  img_cols_ * img_rows_ * imagePixelDepth();
-
         grab_timeout_ = exposureTime().GetMax() * 1.05;
-
+        
         // grab one image to be sure, that the communication is successful
         Pylon::CGrabResultPtr grab_result;
         grab(grab_result);
@@ -529,8 +598,8 @@ bool PylonCameraImpl<CameraTrait>::grab(std::vector<uint8_t>& image, ros::Time& 
          * when ptp is enabled the tick will be equilivant to 1ns so no need for multiplying
          *  */
          
-        //to be changed
-        if (!ptp_set){
+       
+        if (!ptp_set_){
         chunckTimestampCopy <<= 3;
         }
         stamp.fromNSec(chunckTimestampCopy);
@@ -593,16 +662,21 @@ bool PylonCameraImpl<CameraTrait>::grab(Pylon::CGrabResultPtr& grab_result)
         // WaitForFrameTriggerReady to prevent trigger signal to get lost
         // this could happen, if 2xExecuteSoftwareTrigger() is only followed by 1xgrabResult()
         // -> 2nd trigger might get lost
+        if(!hardware_trigger_set_ && !free_run_set_){
         if ( cam_->WaitForFrameTriggerReady(timeout, Pylon::TimeoutHandling_ThrowException) )
         {
+           
             cam_->ExecuteSoftwareTrigger();
+            
         }
         else
         {
             ROS_ERROR("Error WaitForFrameTriggerReady() timed out, impossible to ExecuteSoftwareTrigger()");
             return false;
         }
+         }
         cam_->RetrieveResult(grab_timeout_, grab_result, Pylon::TimeoutHandling_ThrowException);
+    
     }
     catch ( const GenICam::GenericException &e )
     {
@@ -757,6 +831,7 @@ bool PylonCameraImpl<CameraTraitT>::setROI(const sensor_msgs::RegionOfInterest t
                                            sensor_msgs::RegionOfInterest& reached_roi)
 {
     size_t width_to_set = target_roi.width;
+
     size_t height_to_set = target_roi.height;
     size_t offset_x_to_set = target_roi.x_offset;
     size_t offset_y_to_set = target_roi.y_offset;

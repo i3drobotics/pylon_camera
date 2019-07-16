@@ -37,6 +37,7 @@
 
 #include <pylon/gige/BaslerGigEInstantCamera.h>
 
+double frame_rate;
 namespace pylon_camera
 {
 
@@ -64,7 +65,6 @@ struct GigECameraTrait
     typedef Basler_GigECamera::TriggerSourceEnums TriggerSourceEnums;
     typedef Basler_GigECamera::TriggerActivationEnums TriggerActivationEnums;
     typedef Basler_GigECamera::ExposureModeEnums ExposureModeEnums;
-
     static inline AutoTargetBrightnessValueType convertBrightness(const int& value)
     {
         return value;
@@ -130,6 +130,72 @@ bool PylonGigECamera::setAutoflash(const std::map<int, bool> flash_on_lines)
 }
 
 template <>
+bool PylonGigECamera::enableHardwareTrigger(){
+    cam_->AcquisitionMode.SetValue(AcquisitionModeEnums::AcquisitionMode_Continuous);
+    //Because the usb cams doesn't have TriggerSelector_AcquisitionStart  
+   
+    cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_AcquisitionStart);
+    
+    cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_Off);
+    // Disable the acquisition frame rate parameter (this will disable the camera’s
+    // internal frame rate control and allow you to control the frame rate with
+    // external frame start trigger signals)
+    cam_->AcquisitionFrameRateEnable.SetValue(false);
+    cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_FrameStart);
+    cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_On);
+    cam_->TriggerSource.SetValue (TriggerSourceEnums::TriggerSource_Line1);
+    cam_->TriggerActivation.SetValue(TriggerActivationEnums::TriggerActivation_RisingEdge);
+    cam_->ExposureMode.SetValue(ExposureModeEnums::ExposureMode_Timed);
+    hardware_trigger_set_=true;
+    ROS_INFO_STREAM("HARDWARE Trigger Enabled");
+   
+    return true;
+}
+
+template <>
+bool PylonGigECamera::enableIEEE1588PTP()
+{
+    if (GenApi::IsWritable(cam_->GevIEEE1588)){
+      cam_->GevIEEE1588.SetValue(true);
+      ROS_INFO_STREAM("PTP Enabled");
+      ROS_INFO_STREAM(cam_->GevTimestampTickFrequency.GetValue());
+      cam_->GevIEEE1588DataSetLatch.Execute();
+      while(cam_->GevIEEE1588StatusLatched.GetValue()!=(Basler_GigECameraParams::GevIEEE1588StatusLatched_Slave)){
+                ROS_INFO_STREAM("Waiting to Enter Slave Mode");
+                sleep(1);
+          cam_->GevIEEE1588DataSetLatch.Execute();
+      }
+
+       ROS_INFO_STREAM(cam_->GevIEEE1588Status.GetValue());
+        ptp_set_=true;
+
+    }
+    else{
+        ROS_ERROR("The camere doesn't support IEEE_1588_PTP");
+        return false;
+    } 
+    
+
+    return true;
+}
+template <>
+bool PylonGigECamera::enableSynchronousFreeRun()
+{
+    
+    cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_FrameStart);
+    cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_Off);
+    cam_->SyncFreeRunTimerStartTimeLow.SetValue(0);
+    cam_->SyncFreeRunTimerStartTimeHigh.SetValue(0);
+    cam_->SyncFreeRunTimerTriggerRateAbs.SetValue(frame_rate);
+    cam_->SyncFreeRunTimerUpdate.Execute();
+    cam_->SyncFreeRunTimerEnable.SetValue(true);
+    free_run_set_=true;
+    ROS_INFO_STREAM("Synchronous Free Run Enabled");
+    ROS_INFO_STREAM("Synchronous Free Run is set to Trigger Rate of"<<frame_rate);
+    return true;
+}
+
+template <>
 bool PylonGigECamera::applyCamSpecificStartupSettings(const PylonCameraParameter& parameters)
 {
     try
@@ -162,7 +228,7 @@ bool PylonGigECamera::applyCamSpecificStartupSettings(const PylonCameraParameter
         // acA1920-40gm does not support Basler_GigECameraParams::GainSelector_AnalogAll
         // has Basler_GigECameraParams::GainSelector_All instead
         // cam_->GainSelector.SetValue(Basler_GigECameraParams::GainSelector_AnalogAll);
-
+;
         if ( GenApi::IsAvailable(cam_->BinningHorizontal) &&
              GenApi::IsAvailable(cam_->BinningVertical) )
         {
@@ -220,12 +286,49 @@ bool PylonGigECamera::applyCamSpecificStartupSettings(const PylonCameraParameter
             setAutoflash(flash_on_lines);
         }
 
+        
+        if(parameters.enable_ieee_1588_ptp_){
+         enableIEEE1588PTP();
+        }else{
+        if (GenApi::IsWritable(cam_->GevIEEE1588)){
+        cam_->GevIEEE1588.SetValue(false);
+        ROS_INFO_STREAM("PTP Disabled");
+        ROS_INFO_STREAM(cam_->GevTimestampTickFrequency.GetValue());
+        }
+
+    }
+    if(parameters.enable_hardware_trigger_ && parameters.enable_sync_free_run_){
+        ROS_ERROR_STREAM("Cannot set both synchronous free run and hardware triggering together.");
+        return false;
+    }
+
+    if(parameters.enable_hardware_trigger_){
+        enableHardwareTrigger();
+    }
+    if (parameters.frameRate())
+    {
+        if (parameters.frameRate() < 0 && parameters.frameRate() != -1)
+        {
+            frame_rate = 5.0;
+        }
+        else
+        {
+            frame_rate = parameters.frameRate();
+        }
+        //ROS_INFO_STREAM(frame_rate);
+    }
+    if(parameters.enable_sync_free_run_){
+       enableSynchronousFreeRun();
+    }
         // http://www.baslerweb.com/media/documents/AW00064902000%20Control%20Packet%20Timing%20With%20Delays.pdf
         // inter package delay in ticks (? -> mathi said in nanosec) -> prevent lost frames
         // package size * n_cams + 5% overhead = inter package size
         // int n_cams = 1;
         // int inter_package_delay_in_ticks = n_cams * imageSize() * 1.05;
         cam_->GevSCPD.SetValue(parameters.inter_pkg_delay_);
+        cam_->GevSCFTD.SetValue(parameters.frame_transmission_delay_);
+        cam_->GevSCBWR.SetValue(parameters.bandwidth_reserve_);
+
     }
     catch ( const GenICam::GenericException &e )
     {

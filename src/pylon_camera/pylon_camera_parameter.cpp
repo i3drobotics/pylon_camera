@@ -67,7 +67,16 @@ PylonCameraParameter::PylonCameraParameter() :
         auto_flash_(false),
         fetch_camera_timestamp_(false),
         enable_ieee_1588_ptp_(false),
-        enable_hardware_trigger_(false)
+        enable_hardware_trigger_(false),
+        frame_transmission_delay_(0),
+        bandwidth_reserve_(6),
+        enable_sync_free_run_(false),
+        width_to_set_(256),
+        height_to_set_(256),
+        offset_x_to_set_(0),
+        offset_y_to_set_(0),
+        center_x_(false),
+        center_y_(false)
 
 {}
 
@@ -78,7 +87,7 @@ void PylonCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
 {
     nh.param<std::string>("camera_frame", camera_frame_, "pylon_camera");
 
-    nh.param<std::string>("device_user_id", device_user_id_, "");
+    nh.param<std::string>("device_user_id", device_user_id_, device_user_id_);
 
     if ( nh.hasParam("frame_rate") )
     {
@@ -220,6 +229,33 @@ void PylonCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
     if( nh.hasParam("enable_hardware_trigger")){
         nh.getParam("enable_hardware_trigger",enable_hardware_trigger_);
     }
+
+    if ( nh.hasParam("enable_sync_free_run"))
+    {
+        nh.getParam("enable_sync_free_run", enable_sync_free_run_);
+    }
+
+       if ( nh.hasParam("width_to_set"))
+    {
+        nh.getParam("width_to_set", width_to_set_);
+    }
+       if ( nh.hasParam("height_to_set"))
+    {
+        nh.getParam("height_to_set", height_to_set_);
+    }
+       if ( nh.hasParam("offset_x_to_set"))
+    {
+        nh.getParam("offset_x_to_set", offset_x_to_set_);
+    }
+       if ( nh.hasParam("center_x"))
+    {
+        nh.getParam("center_x", center_x_);
+    }
+        if ( nh.hasParam("center_y"))
+    {
+        nh.getParam("center_y", center_y_);
+    }   
+    
     nh.param<double>("exposure_search_timeout", exposure_search_timeout_, 5.);
     nh.param<double>("auto_exposure_upper_limit", auto_exp_upper_lim_, 10000000.);
 
@@ -231,6 +267,16 @@ void PylonCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
     if ( nh.hasParam("gige/inter_pkg_delay") )
     {
         nh.getParam("gige/inter_pkg_delay", inter_pkg_delay_);
+    }
+
+    if ( nh.hasParam("gige/frame_transmission_delay") )
+    {
+        nh.getParam("gige/frame_transmission_delay", frame_transmission_delay_);
+    }
+
+        if ( nh.hasParam("gige/bandwidth_reserve") )
+    {
+        nh.getParam("gige/bandwidth_reserve", bandwidth_reserve_);
     }
 
     std::string shutter_param_string;

@@ -86,8 +86,6 @@ All parameters are listed in the default config file:  ``config/default.yaml``
 
 - **frame_rate**
   The desired publisher frame rate if listening to the topics. This parameter can only be set once at start-up. Calling the GrabImages-Action can result in a higher frame rate.
-- **fetch_camera_timestamp**
-  Boolean set at start-up to choose which of {camera, host computer} is in charge of timestamping the image. If the camera's clock is synchronized with the clock of the host computer (e.g. through PTP IEEE-1588), setting this parameter to true improves the accuracy of the timestamps as this factors out network delays and IO delays due to a high CPU load.
 
 - **shutter_mode**
   Set mode of camera's shutter if the value is not empty. The supported modes are 'rolling', 'global' and 'global_reset'.

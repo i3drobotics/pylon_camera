@@ -256,12 +256,38 @@ public:
      * For GigE-Cameras used on a RaspberryPI this value should be set to 11772
      */
     int inter_pkg_delay_;
-
+    /**
+    The Frame Transmission Delay.
+     *Determines the delay time in ticks between when the camera is ready to
+     *start transmitting the first packet and when it actually transmits the packet
+     */
+    int frame_transmission_delay_;
+    /**
+     *The Bandwidth reserve determines to do
+     * in noisy environments set it between 8-10
+     */ 
+    int bandwidth_reserve_; 
     /**
       Shutter mode
     */
     SHUTTER_MODE shutter_mode_;
 
+    /**
+     * Flag which enables synchronous free run for Gige cameras better be used along with ptp
+     */ 
+    bool enable_sync_free_run_;
+
+    int width_to_set_;
+
+    int height_to_set_;
+
+    int offset_x_to_set_;
+
+    int offset_y_to_set_;
+
+    bool center_x_;
+
+    bool center_y_;
     /**
      * Flag that indicates if the camera has been calibrated and the intrinsic
      * calibration matrices are available

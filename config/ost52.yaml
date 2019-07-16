@@ -1,6 +1,6 @@
 image_width: 1024
 image_height: 720
-camera_name: ada_1
+camera_name: ada_2
 camera_matrix:
   rows: 3
   cols: 3

@@ -69,7 +69,7 @@ PylonCameraNode::PylonCameraNode()
       set_user_output_srvs_(),
       pylon_camera_(nullptr),
       it_(new image_transport::ImageTransport(nh_)),
-      img_raw_pub_(it_->advertiseCamera("image_raw", 1)),
+      img_raw_pub_(it_->advertiseCamera("image_raw", 10)),
       img_rect_pub_(nullptr),
       grab_imgs_raw_as_(
               nh_,
@@ -244,6 +244,8 @@ bool PylonCameraNode::startGrabbing()
     img_raw_msg_.header.frame_id = pylon_camera_parameter_set_.cameraFrame();
     // Encoding of pixels -- channel meaning, ordering, size
     // taken from the list of strings in include/sensor_msgs/image_encodings.h
+
+      ROS_INFO_STREAM(pylon_camera_->imageRows());
     img_raw_msg_.encoding = pylon_camera_->currentROSEncoding();
     img_raw_msg_.height = pylon_camera_->imageRows();
     img_raw_msg_.width = pylon_camera_->imageCols();
@@ -383,23 +385,23 @@ bool PylonCameraNode::startGrabbing()
             << "shutter mode = "
             << pylon_camera_parameter_set_.shutterModeString());
 
-    // Framerate Settings
-    // if ( pylon_camera_->maxPossibleFramerate() < pylon_camera_parameter_set_.frameRate() )
-    // {
-    //     ROS_INFO("Desired framerate %.2f is higher than max possible. Will limit framerate to: %.2f Hz",
-    //              pylon_camera_parameter_set_.frameRate(),
-    //              pylon_camera_->maxPossibleFramerate());
-    //     pylon_camera_parameter_set_.setFrameRate(
-    //             nh_,
-    //             pylon_camera_->maxPossibleFramerate());
-    // }
-    // else if ( pylon_camera_parameter_set_.frameRate() == -1 )
-    // {
-    //     pylon_camera_parameter_set_.setFrameRate(nh_,
-    //                                              pylon_camera_->maxPossibleFramerate());
-    //     ROS_INFO("Max possible framerate is %.2f Hz",
-    //              pylon_camera_->maxPossibleFramerate());
-    // }
+    //Framerate Settings
+    if ( pylon_camera_->maxPossibleFramerate() < pylon_camera_parameter_set_.frameRate() )
+    {
+        ROS_INFO("Desired framerate %.2f is higher than max possible. Will limit framerate to: %.2f Hz",
+                 pylon_camera_parameter_set_.frameRate(),
+                 pylon_camera_->maxPossibleFramerate());
+        pylon_camera_parameter_set_.setFrameRate(
+                nh_,
+                pylon_camera_->maxPossibleFramerate());
+    }
+    else if ( pylon_camera_parameter_set_.frameRate() == -1 )
+    {
+        pylon_camera_parameter_set_.setFrameRate(nh_,
+                                                 pylon_camera_->maxPossibleFramerate());
+        ROS_INFO("Max possible framerate is %.2f Hz",
+                 pylon_camera_->maxPossibleFramerate());
+    }
     return true;
 }
 
@@ -408,7 +410,7 @@ void PylonCameraNode::setupRectification()
     if ( !img_rect_pub_ )
     {
         img_rect_pub_ = new ros::Publisher(
-                            nh_.advertise<sensor_msgs::Image>("image_rect", 1));
+                            nh_.advertise<sensor_msgs::Image>("image_rect", 10));
     }
 
     if ( !grab_imgs_rect_as_ )
@@ -483,7 +485,7 @@ void PylonCameraNode::spin()
             user_output_srv.shutdown();
         }
         set_user_output_srvs_.clear();
-        ros::Duration(0.5).sleep();  // sleep for half a second
+        ros::Duration(1.5).sleep();  // sleep for half a second
         init();
         return;
     }

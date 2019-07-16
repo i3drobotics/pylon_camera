@@ -89,8 +89,9 @@ bool PylonDARTCamera::grab(Pylon::CGrabResultPtr& grab_result)
     {
         // /!\ The dart camera device does not support
         // 'waitForFrameTriggerReady'
+        if(!hardware_trigger_set_){
         cam_->ExecuteSoftwareTrigger();
-
+        }
         cam_->RetrieveResult(grab_timeout_, grab_result,
                              Pylon::TimeoutHandling_ThrowException);
     }

@@ -53,7 +53,13 @@ struct USBCameraTrait
     typedef Basler_UsbCameraParams::ShutterModeEnums ShutterModeEnums;
     typedef Basler_UsbCameraParams::UserOutputSelectorEnums UserOutputSelectorEnums;
     typedef Basler_UsbCameraParams::ChunkSelectorEnums ChunkSelectorEnums;
-    
+    typedef Basler_UsbCameraParams::TriggerSelectorEnums TriggerSelectorEnums;
+    typedef Basler_UsbCameraParams::TriggerModeEnums TriggerModeEnums;
+    typedef Basler_UsbCameraParams::AcquisitionModeEnums AcquisitionModeEnums;
+    typedef Basler_UsbCameraParams::TriggerSourceEnums TriggerSourceEnums;
+    typedef Basler_UsbCameraParams::TriggerActivationEnums TriggerActivationEnums;
+    typedef Basler_UsbCameraParams::ExposureModeEnums ExposureModeEnums;
+    typedef Basler_UsbCameraParams::LineSourceEnums LineSourceEnums;
     static inline AutoTargetBrightnessValueType convertBrightness(const int& value)
     {
         return value / 255.0;
@@ -61,6 +67,46 @@ struct USBCameraTrait
 };
 
 typedef PylonCameraImpl<USBCameraTrait> PylonUSBCamera;
+
+template <>
+bool PylonUSBCamera::enableHardwareTrigger()
+{
+    // Set the acquisition mode to Continuous
+    cam_->AcquisitionMode.SetValue(AcquisitionModeEnums::AcquisitionMode_Continuous);
+    // Select the frame burst start trigger
+    cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_FrameBurstStart);
+    // Set the mode for the selected trigger
+    cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_Off);
+    // Disable the acquisition frame rate parameter (this will disable the camera’s
+    // internal frame rate control and allow you to control the frame rate with
+    // external frame start trigger signals)
+    cam_->AcquisitionFrameRateEnable.SetValue(false);
+    // Select the frame start trigger
+    cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_FrameStart);
+    // Set the mode for the selected trigger
+    cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_On);
+    // Set the source for the selected trigger
+    cam_->TriggerSource.SetValue(TriggerSourceEnums::TriggerSource_Line1);
+    // Set the trigger activation mode to rising edge
+    cam_->TriggerActivation.SetValue(TriggerActivationEnums::TriggerActivation_RisingEdge);
+    // Set for the trigger width exposure mode
+    cam_->ExposureMode.SetValue(ExposureModeEnums::ExposureMode_Timed);
+    hardware_trigger_set_=true;
+    ROS_INFO_STREAM("Hardware Trigger Enabled.");
+    return true;
+}
+template <>
+bool PylonUSBCamera::enableIEEE1588PTP()
+{
+    ROS_WARN_STREAM("IEEE 1588 PTP isnot supported on USB Cameras,not set");
+    return true;
+}
+
+template <>
+bool PylonUSBCamera::enableSynchronousFreeRun(){
+        ROS_WARN_STREAM("Synchronous Free Run isnot supported on USB Cameras,not set");
+        return true;
+}
 
 template <>
 bool PylonUSBCamera::applyCamSpecificStartupSettings(const PylonCameraParameter& parameters)
@@ -119,6 +165,15 @@ bool PylonUSBCamera::applyCamSpecificStartupSettings(const PylonCameraParameter&
                 << cam_->AutoTargetBrightness.GetMin() * 255 << " - "
                 << cam_->AutoTargetBrightness.GetMax() * 255
                 << "] which is the average pixel intensity.");
+        if(parameters.enable_hardware_trigger_){
+         enableHardwareTrigger();
+        }
+        if(parameters.enable_ieee_1588_ptp_){
+            enableIEEE1588PTP();
+        }
+        if(parameters.enable_sync_free_run_){
+            enableSynchronousFreeRun();
+        }        
     }
     catch ( const GenICam::GenericException &e )
     {
@@ -128,6 +183,8 @@ bool PylonUSBCamera::applyCamSpecificStartupSettings(const PylonCameraParameter&
     }
     return true;
 }
+
+
 
 template <>
 bool PylonUSBCamera::setupSequencer(const std::vector<float>& exposure_times,

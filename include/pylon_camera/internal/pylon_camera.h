@@ -156,14 +156,15 @@ protected:
     typedef typename CameraTraitT::ShutterModeEnums ShutterModeEnums;
     typedef typename CameraTraitT::UserOutputSelectorEnums UserOutputSelectorEnums;
     typedef typename CameraTraitT::ChunkSelectorEnums ChunkSelectorEnums;
-    typedef typename CameraTraitT::GevIEEE1588StatusEnums GevIEEE1588StatusEnums;
-    typedef typename CameraTraitT::GevIEEE1588StatusLatchedEnums GevIEEE1588StatusLatchedEnums;
+    //typedef typename CameraTraitT::GevIEEE1588StatusEnums GevIEEE1588StatusEnums;
+    //typedef typename CameraTraitT::GevIEEE1588StatusLatchedEnums GevIEEE1588StatusLatchedEnums;
     typedef typename CameraTraitT::TriggerSelectorEnums TriggerSelectorEnums;
     typedef typename CameraTraitT::TriggerModeEnums TriggerModeEnums;
     typedef typename CameraTraitT::AcquisitionModeEnums AcquisitionModeEnums;
     typedef typename CameraTraitT::TriggerSourceEnums TriggerSourceEnums;
     typedef typename CameraTraitT::TriggerActivationEnums TriggerActivationEnums;
     typedef typename CameraTraitT::ExposureModeEnums ExposureModeEnums;
+    typedef typename CameraTraitT::LineSourceEnums LineSourceEnums;
 
     CBaslerInstantCameraT* cam_;
 
@@ -190,13 +191,20 @@ protected:
 
     virtual bool enableIEEE1588PTP();
     virtual bool enableHardwareTrigger();
+    virtual bool enableSynchronousFreeRun();
+    virtual bool setWidth(int width_to_set);
+    virtual bool setHeight(int height_to_set);
+    virtual bool setOffsetX(int offset_x_to_set);
+    virtual bool setOffsetY(int offset_y_to_set);
+    virtual bool centerX();
+    virtual bool centerY();
 };
 
 }  // namespace pylon_camera
 
 #include <pylon_camera/internal/impl/pylon_camera_base.hpp>
-//#include <pylon_camera/internal/impl/pylon_camera_usb.hpp>
-//#include <pylon_camera/internal/impl/pylon_camera_dart.hpp>
+#include <pylon_camera/internal/impl/pylon_camera_usb.hpp>
+#include <pylon_camera/internal/impl/pylon_camera_dart.hpp>
 #include <pylon_camera/internal/impl/pylon_camera_gige.hpp>
 
 #endif  // PYLON_CAMERA_INTERNAL_PYLON_CAMERA_H

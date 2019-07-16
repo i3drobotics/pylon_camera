@@ -1,0 +1,20 @@
+image_width: 1280
+image_height: 720
+camera_name: ada/front_camera
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1062.997018, 0.000000, 1044.864422, 0.000000, 1063.694677, 684.903787, 0.000000, 0.000000, 1.000000]
+distortion_model: rational_polynomial
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [0.314561, 0.063656, 0.000140, -0.000091, 0.009105, 0.682016, 0.095377, 0.032128]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [666.213257, 0.000000, 1067.947664, 0.000000, 0.000000, 835.404358, 641.456407, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]
