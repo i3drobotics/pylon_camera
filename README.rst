@@ -29,6 +29,14 @@ The package opens either a predefined camera (using a given 'device_user_id' par
 |
 
 ******
+**Industrial 3D Robotics changes**
+******
+
+Added namespace functionality for changing the name of the cameras.
+
+|
+
+******
 **Installation**
 ******
 The package has been tested for ROS-Indigo and ROS-Kinetic.
