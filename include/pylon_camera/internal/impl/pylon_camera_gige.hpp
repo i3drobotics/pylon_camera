@@ -73,6 +73,17 @@ struct GigECameraTrait
 
 typedef PylonCameraImpl<GigECameraTrait> PylonGigECamera;
 
+template <>
+bool PylonGigECamera::getLineStatus(int line_num){
+    if (line_num == 1){
+        cam_->LineSelector.SetValue(Basler_GigECameraParams::LineSelector_Line1);
+        cam_->LineMode.SetValue(Basler_GigECameraParams::LineMode_Input);
+    } else if (line_num == 3){
+        cam_->LineSelector.SetValue(Basler_GigECameraParams::LineSelector_Line3);
+        cam_->LineMode.SetValue(Basler_GigECameraParams::LineMode_Input);
+    }
+    return(cam_->LineStatus.GetValue());
+}
 
 template <>
 bool PylonGigECamera::setAutoflash(const std::map<int, bool> flash_on_lines)

@@ -218,6 +218,13 @@ public:
     virtual bool setGain(const float& target_gain, float& reached_gain) = 0;
 
     /**
+     * Get the status of line
+     * @param line_num line number to get the status of
+     * @return true if HIGH, false if LOW
+     */
+    virtual bool getLineStatus(int line_num) = 0;
+
+    /**
      * Sets the target gamma value
      * @param target_gamma the target gamma value.
      * @param reached_gamma the reached gamma value.

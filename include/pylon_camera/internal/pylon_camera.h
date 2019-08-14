@@ -86,6 +86,8 @@ public:
 
     virtual bool setAutoflash(const std::map<int, bool> flash_on_lines);
 
+    virtual bool getLineStatus(int line_num);
+
     virtual bool setGain(const float& target_gain, float& reached_gain);
 
     virtual bool setGamma(const float& target_gamma, float& reached_gamma);

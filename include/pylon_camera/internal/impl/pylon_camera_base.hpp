@@ -1030,6 +1030,13 @@ bool PylonCameraImpl<CameraTraitT>::setAutoflash(
 }
 
 template <typename CameraTraitT>
+bool PylonCameraImpl<CameraTraitT>::getLineStatus(int line_num)
+{
+    ROS_ERROR_STREAM("Not implemented for this camera type");
+    return false;
+}
+
+template <typename CameraTraitT>
 bool PylonCameraImpl<CameraTraitT>::setGain(const float& target_gain,
                                             float& reached_gain)
 {
