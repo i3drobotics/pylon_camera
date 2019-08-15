@@ -484,7 +484,6 @@ void PylonCameraNode::spin()
         line_1_status_ = getLineStatus(1);
         line_3_status_ = getLineStatus(3);
         std::string line_3_status_str = line_3_status_ ? "true" : "false";
-        //ROS_INFO("Line 3: %s", line_3_status_str.c_str());
     }
 
     if (pylon_camera_->isCamRemoved())
