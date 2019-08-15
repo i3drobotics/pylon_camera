@@ -294,7 +294,7 @@ bool PylonCameraNode::startGrabbing()
         if (camera_info_manager_->loadCameraInfo(
                 pylon_camera_parameter_set_.cameraInfoURL()))
         {
-            setupRectification();
+            //setupRectification();
             // set the correct tf frame_id
             CameraInfoPtr cam_info(new CameraInfo(
                 camera_info_manager_->getCameraInfo()));
@@ -550,6 +550,7 @@ void PylonCameraNode::spin()
 
         if (getNumSubscribersRect() > 0 && camera_info_manager_->isCalibrated())
         {
+            /*
             cv_bridge_img_rect_->header.stamp = img_raw_msg_.header.stamp;
             assert(pinhole_model_->initialized());
             cv_bridge::CvImagePtr cv_img_raw = cv_bridge::toCvCopy(
@@ -558,6 +559,7 @@ void PylonCameraNode::spin()
             pinhole_model_->fromCameraInfo(camera_info_manager_->getCameraInfo());
             pinhole_model_->rectifyImage(cv_img_raw->image, cv_bridge_img_rect_->image);
             img_rect_pub_->publish(*cv_bridge_img_rect_);
+            */
         }
     }
 }
