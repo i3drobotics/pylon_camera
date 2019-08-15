@@ -67,12 +67,14 @@ PylonCameraNode::PylonCameraNode()
                                              &PylonCameraNode::setSleepingCallback,
                                              this)),
       get_line_status_srv_(nh_.advertiseService(ros::this_node::getNamespace() + "/get_line_status",
-                                          &PylonCameraNode::getLineStatusCallback,
-                                          this)),
+                                                &PylonCameraNode::getLineStatusCallback,
+                                                this)),
       set_user_output_srvs_(),
       pylon_camera_(nullptr),
       it_(new image_transport::ImageTransport(nh_)),
       img_raw_pub_(it_->advertiseCamera(ros::this_node::getNamespace() + "/image_raw", 1)),
+      img_raw_pub_no_laser_(it_->advertiseCamera(ros::this_node::getNamespace() + "/image_raw_no_laser", 1)),
+      img_raw_pub_with_laser_(it_->advertiseCamera(ros::this_node::getNamespace() + "/image_raw_with_laser", 1)),
       img_rect_pub_(nullptr),
       grab_imgs_raw_as_(
           nh_,
@@ -477,14 +479,13 @@ void PylonCameraNode::spin()
         ROS_INFO_ONCE("Camera not calibrated");
     }
 
-    line_1_status_ = getLineStatus(1);
-    line_3_status_ = getLineStatus(3);
-
-    std::string line_1_status_str = line_1_status_ ? "true" : "false";
-    std::string line_3_status_str = line_3_status_ ? "true" : "false";
-
-    //ROS_INFO("Line 1 status: %s",line_1_status_str.c_str());
-    //ROS_INFO("Line 3 status: %s",line_3_status_str.c_str());
+    if (pylon_camera_parameter_set_.enable_split_laser_)
+    {
+        line_1_status_ = getLineStatus(1);
+        line_3_status_ = getLineStatus(3);
+        std::string line_3_status_str = line_3_status_ ? "true" : "false";
+        //ROS_INFO("Line 3: %s", line_3_status_str.c_str());
+    }
 
     if (pylon_camera_->isCamRemoved())
     {
@@ -502,13 +503,36 @@ void PylonCameraNode::spin()
     }
     // images were published if subscribers are available or if someone calls
     // the GrabImages Action
-    if (!isSleeping() && (img_raw_pub_.getNumSubscribers() || getNumSubscribersRect()))
+    if (!isSleeping() && (img_raw_pub_.getNumSubscribers() || img_raw_pub_with_laser_.getNumSubscribers() || img_raw_pub_no_laser_.getNumSubscribers() || getNumSubscribersRect()))
     {
         if (getNumSubscribersRaw() || getNumSubscribersRect())
         {
             if (!grabImage())
             {
                 return;
+            }
+        }
+
+        if (pylon_camera_parameter_set_.enable_split_laser_)
+        {
+            sensor_msgs::CameraInfoPtr cam_info(
+                new sensor_msgs::CameraInfo(
+                    camera_info_manager_->getCameraInfo()));
+            cam_info->header.stamp = img_raw_msg_.header.stamp;
+
+            if (line_3_status_)
+            {
+                if (img_raw_pub_with_laser_.getNumSubscribers() > 0)
+                {
+                    img_raw_pub_with_laser_.publish(img_raw_msg_, *cam_info);
+                }
+            }
+            else
+            {
+                if (img_raw_pub_no_laser_.getNumSubscribers() > 0)
+                {
+                    img_raw_pub_no_laser_.publish(img_raw_msg_, *cam_info);
+                }
             }
         }
 
@@ -850,7 +874,8 @@ bool PylonCameraNode::setAutoflash(const int output_id,
     return true;
 }
 
-bool PylonCameraNode::getLineStatus(int line_num){
+bool PylonCameraNode::getLineStatus(int line_num)
+{
     return (pylon_camera_->getLineStatus(line_num));
 }
 
@@ -1618,21 +1643,26 @@ float PylonCameraNode::calcCurrentBrightness()
 }
 
 bool PylonCameraNode::getLineStatusCallback(camera_control_msgs::GetLineStatus::Request &req,
-                                             camera_control_msgs::GetLineStatus::Response &res)
+                                            camera_control_msgs::GetLineStatus::Response &res)
 {
-    ROS_INFO("Line status request: %d",req.line);
+    ROS_INFO("Line status request: %d", req.line);
 
-    if (req.line == 1){
+    if (req.line == 1)
+    {
         res.status = line_1_status_;
         std::string line_1_status_str = line_1_status_ ? "true" : "false";
-        ROS_INFO("Line 1: %s",line_1_status_str.c_str());
+        ROS_INFO("Line 1: %s", line_1_status_str.c_str());
         return true;
-    } else if (req.line == 3){
+    }
+    else if (req.line == 3)
+    {
         res.status = line_3_status_;
         std::string line_3_status_str = line_3_status_ ? "true" : "false";
-        ROS_INFO("Line 3: %s",line_3_status_str.c_str());
+        ROS_INFO("Line 3: %s", line_3_status_str.c_str());
         return true;
-    } else {
+    }
+    else
+    {
         ROS_ERROR("Invlaid line number for line status service. MUST be 1 or 3");
         return false;
     }

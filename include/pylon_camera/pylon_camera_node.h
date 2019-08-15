@@ -397,6 +397,8 @@ protected:
 
     image_transport::ImageTransport* it_;
     image_transport::CameraPublisher img_raw_pub_;
+    image_transport::CameraPublisher img_raw_pub_no_laser_;
+    image_transport::CameraPublisher img_raw_pub_with_laser_;
 
     ros::Publisher* img_rect_pub_;
     image_geometry::PinholeCameraModel* pinhole_model_;

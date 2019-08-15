@@ -289,6 +289,12 @@ public:
     */
     bool enable_hardware_trigger_;
     /**
+     * flag to enable split laser monitoring. Line 3 used to monitor if laser is on and split image frames in to with laser or no laser)
+     * Default: false
+    */
+    bool enable_split_laser_;
+
+    /**
      * Flag that indicates if the camera has a flash connected which should be on on exposure
      * Only supported for GigE cameras. Default: false
      */

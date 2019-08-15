@@ -67,7 +67,8 @@ PylonCameraParameter::PylonCameraParameter() :
         auto_flash_(false),
         fetch_camera_timestamp_(false),
         enable_ieee_1588_ptp_(false),
-        enable_hardware_trigger_(false)
+        enable_hardware_trigger_(false),
+        enable_split_laser_(false)
 
 {}
 
@@ -219,6 +220,9 @@ void PylonCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
     }
     if( nh.hasParam("enable_hardware_trigger")){
         nh.getParam("enable_hardware_trigger",enable_hardware_trigger_);
+    }
+    if (nh.hasParam("enable_split_laser")){
+        nh.getParam("enable_split_laser",enable_split_laser_);
     }
     nh.param<double>("exposure_search_timeout", exposure_search_timeout_, 5.);
     nh.param<double>("auto_exposure_upper_limit", auto_exp_upper_lim_, 10000000.);
