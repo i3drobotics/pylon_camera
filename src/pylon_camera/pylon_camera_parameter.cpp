@@ -84,6 +84,7 @@ void PylonCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
     if ( nh.hasParam("frame_rate") )
     {
         nh.getParam("frame_rate", frame_rate_);
+        //ROS_INFO("FRAME RATE: %f",frame_rate_);
     }
 
     nh.param<std::string>("camera_info_url", camera_info_url_, "");

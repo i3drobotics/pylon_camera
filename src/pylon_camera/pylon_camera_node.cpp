@@ -390,25 +390,29 @@ bool PylonCameraNode::startGrabbing()
                     << "shutter mode = "
                     << pylon_camera_parameter_set_.shutterModeString());
 
-    // Framerate Settings
-    // if ( pylon_camera_->maxPossibleFramerate() < pylon_camera_parameter_set_.frameRate() )
-    // {
-    //     ROS_INFO("Desired framerate %.2f is higher than max possible. Will limit framerate to: %.2f Hz",
-    //              pylon_camera_parameter_set_.frameRate(),
-    //              pylon_camera_->maxPossibleFramerate());
-    //     pylon_camera_parameter_set_.setFrameRate(
-    //             nh_,
-    //             pylon_camera_->maxPossibleFramerate());
-    // }
-    // else if ( pylon_camera_parameter_set_.frameRate() == -1 )
-    // {
-    //     pylon_camera_parameter_set_.setFrameRate(nh_,
-    //                                              pylon_camera_->maxPossibleFramerate());
-    //     ROS_INFO("Max possible framerate is %.2f Hz",
-    //              pylon_camera_->maxPossibleFramerate());
-    // }
+    //Ignore framerate settings if using hardware trigger
+    if (!pylon_camera_parameter_set_.enable_hardware_trigger_)
+    {
+        // Framerate Settings
+        if (pylon_camera_->maxPossibleFramerate() < pylon_camera_parameter_set_.frameRate())
+        {
+            ROS_INFO("Desired framerate %.2f is higher than max possible. Will limit framerate to: %.2f Hz",
+                     pylon_camera_parameter_set_.frameRate(),
+                     pylon_camera_->maxPossibleFramerate());
+            pylon_camera_parameter_set_.setFrameRate(
+                nh_,
+                pylon_camera_->maxPossibleFramerate());
+        }
+        else if (pylon_camera_parameter_set_.frameRate() == -1)
+        {
+            pylon_camera_parameter_set_.setFrameRate(nh_,
+                                                     pylon_camera_->maxPossibleFramerate());
+            ROS_INFO("Max possible framerate is %.2f Hz",
+                     pylon_camera_->maxPossibleFramerate());
+        }
+    }
     return true;
-}
+} // namespace pylon_camera
 
 void PylonCameraNode::setupRectification()
 {
@@ -502,14 +506,24 @@ void PylonCameraNode::spin()
     }
     // images were published if subscribers are available or if someone calls
     // the GrabImages Action
-    if (!isSleeping() && (img_raw_pub_.getNumSubscribers() || img_raw_pub_with_laser_.getNumSubscribers() || img_raw_pub_no_laser_.getNumSubscribers() ))
+    if (!isSleeping() && (img_raw_pub_.getNumSubscribers() || img_raw_pub_with_laser_.getNumSubscribers() || img_raw_pub_no_laser_.getNumSubscribers()))
     {
-        if (getNumSubscribersRaw())
+        if (!grabImage())
         {
-            if (!grabImage())
-            {
-                return;
-            }
+            return;
+        }
+
+        if (img_raw_pub_.getNumSubscribers() > 0)
+        {
+            // get actual cam_info-object in every frame, because it might have
+            // changed due to a 'set_camera_info'-service call
+            sensor_msgs::CameraInfoPtr cam_info(
+                new sensor_msgs::CameraInfo(
+                    camera_info_manager_->getCameraInfo()));
+            cam_info->header.stamp = img_raw_msg_.header.stamp;
+
+            // Publish via image_transport
+            img_raw_pub_.publish(img_raw_msg_, *cam_info);
         }
 
         if (pylon_camera_parameter_set_.enable_split_laser_)
@@ -517,7 +531,8 @@ void PylonCameraNode::spin()
             sensor_msgs::CameraInfoPtr cam_info(
                 new sensor_msgs::CameraInfo(
                     camera_info_manager_->getCameraInfo()));
-            cam_info->header.stamp = img_raw_msg_.header.stamp;
+            cam_info->header.stamp = ros::Time::now();
+            img_raw_msg_.header.stamp = ros::Time::now();
 
             if (line_3_status_)
             {
@@ -533,19 +548,6 @@ void PylonCameraNode::spin()
                     img_raw_pub_no_laser_.publish(img_raw_msg_, *cam_info);
                 }
             }
-        }
-
-        if (img_raw_pub_.getNumSubscribers() > 0)
-        {
-            // get actual cam_info-object in every frame, because it might have
-            // changed due to a 'set_camera_info'-service call
-            sensor_msgs::CameraInfoPtr cam_info(
-                new sensor_msgs::CameraInfo(
-                    camera_info_manager_->getCameraInfo()));
-            cam_info->header.stamp = img_raw_msg_.header.stamp;
-
-            // Publish via image_transport
-            img_raw_pub_.publish(img_raw_msg_, *cam_info);
         }
 
         /*
