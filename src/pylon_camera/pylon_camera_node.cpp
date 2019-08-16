@@ -502,9 +502,9 @@ void PylonCameraNode::spin()
     }
     // images were published if subscribers are available or if someone calls
     // the GrabImages Action
-    if (!isSleeping() && (img_raw_pub_.getNumSubscribers() || img_raw_pub_with_laser_.getNumSubscribers() || img_raw_pub_no_laser_.getNumSubscribers() || getNumSubscribersRect()))
+    if (!isSleeping() && (img_raw_pub_.getNumSubscribers() || img_raw_pub_with_laser_.getNumSubscribers() || img_raw_pub_no_laser_.getNumSubscribers() ))
     {
-        if (getNumSubscribersRaw() || getNumSubscribersRect())
+        if (getNumSubscribersRaw())
         {
             if (!grabImage())
             {
@@ -548,9 +548,10 @@ void PylonCameraNode::spin()
             img_raw_pub_.publish(img_raw_msg_, *cam_info);
         }
 
+        /*
         if (getNumSubscribersRect() > 0 && camera_info_manager_->isCalibrated())
         {
-            /*
+            
             cv_bridge_img_rect_->header.stamp = img_raw_msg_.header.stamp;
             assert(pinhole_model_->initialized());
             cv_bridge::CvImagePtr cv_img_raw = cv_bridge::toCvCopy(
@@ -559,8 +560,9 @@ void PylonCameraNode::spin()
             pinhole_model_->fromCameraInfo(camera_info_manager_->getCameraInfo());
             pinhole_model_->rectifyImage(cv_img_raw->image, cv_bridge_img_rect_->image);
             img_rect_pub_->publish(*cv_bridge_img_rect_);
-            */
+           
         }
+        */
     }
 }
 
@@ -897,7 +899,8 @@ uint32_t PylonCameraNode::getNumSubscribersRect() const
 
 uint32_t PylonCameraNode::getNumSubscribers() const
 {
-    return img_raw_pub_.getNumSubscribers() + img_rect_pub_->getNumSubscribers();
+    //return img_raw_pub_.getNumSubscribers() + img_rect_pub_->getNumSubscribers();
+    return img_raw_pub_.getNumSubscribers();
 }
 
 void PylonCameraNode::setupInitialCameraInfo(sensor_msgs::CameraInfo &cam_info_msg)
