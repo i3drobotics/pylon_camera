@@ -280,7 +280,7 @@ bool PylonCameraNode::startGrabbing()
     if (pylon_camera_parameter_set_.cameraInfoURL().empty() ||
         !camera_info_manager_->validateURL(pylon_camera_parameter_set_.cameraInfoURL()))
     {
-        ROS_INFO_STREAM("CameraInfoURL needed for rectification! ROS-Param: "
+        ROS_INFO_STREAM("CameraInfoURL needed! ROS-Param: "
                         << "'" << nh_.getNamespace() << "/camera_info_url' = '"
                         << pylon_camera_parameter_set_.cameraInfoURL() << "' is invalid!");
         ROS_DEBUG_STREAM("CameraInfoURL should have following style: "
