@@ -882,6 +882,44 @@ bool PylonCameraImpl<CameraTraitT>::setROI(const sensor_msgs::RegionOfInterest t
     return true;
 }
 
+template <typename CameraTraitT>
+bool PylonCameraImpl<CameraTraitT>::setReverseX(bool enable)
+{
+    try
+    {
+        if ( GenApi::IsAvailable(cam_->ReverseX)) {
+            cam_->ReverseX.SetValue(enable);
+        }
+    }
+    catch ( const GenICam::GenericException &e )
+    {
+        ROS_ERROR_STREAM("An exception while setting reverse x to"
+                << enable << " occurred: "
+                << e.GetDescription());
+        return false;
+    }
+    return true;
+}
+
+template <typename CameraTraitT>
+bool PylonCameraImpl<CameraTraitT>::setReverseY(bool enable)
+{
+    try
+    {
+        if ( GenApi::IsAvailable(cam_->ReverseY)) {
+            cam_->ReverseY.SetValue(enable);
+        }
+    }
+    catch ( const GenICam::GenericException &e )
+    {
+        ROS_ERROR_STREAM("An exception while setting reverse y to"
+                << enable << " occurred: "
+                << e.GetDescription());
+        return false;
+    }
+    return true;
+}
+
 
 template <typename CameraTraitT>
 bool PylonCameraImpl<CameraTraitT>::setBinningX(const size_t& target_binning_x,

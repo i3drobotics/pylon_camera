@@ -156,6 +156,20 @@ public:
      */
     virtual bool setROI(const sensor_msgs::RegionOfInterest target_roi,
 			sensor_msgs::RegionOfInterest& reached_roi) = 0;
+
+    /**
+     * Update the reverse x setting
+     * @param enable the target reverse x setting
+     * @return true if the targeted reverse x setting could be reached
+     */
+    virtual bool setReverseX(bool enable) = 0;
+
+    /**
+     * Update the reverse t setting
+     * @param enable the target reverse y setting
+     * @return true if the targeted reverse y setting could be reached
+     */
+    virtual bool setReverseY(bool enable) = 0;
     
     /**
      * Sets the target horizontal binning_x factor

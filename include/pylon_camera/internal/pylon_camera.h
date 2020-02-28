@@ -73,6 +73,10 @@ public:
 
     virtual bool setROI(const sensor_msgs::RegionOfInterest target_roi,
                         sensor_msgs::RegionOfInterest& reached_roi);
+
+    virtual bool setReverseX(bool enable);
+
+    virtual bool setReverseY(bool enable);
     
     virtual bool setBinningX(const size_t& target_binning_x,
                              size_t& reached_binning_x);

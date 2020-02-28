@@ -295,6 +295,18 @@ public:
     bool enable_split_laser_;
 
     /**
+     * flag to enable reverse x to flip the image in the x axis
+     * Default: false
+    */
+    bool enable_reverse_x_;
+
+    /**
+     * flag to enable reverse y to flip the image in the y axis
+     * Default: false
+    */
+    bool enable_reverse_y_;
+
+    /**
      * Flag that indicates if the camera has a flash connected which should be on on exposure
      * Only supported for GigE cameras. Default: false
      */

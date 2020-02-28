@@ -68,7 +68,9 @@ PylonCameraParameter::PylonCameraParameter() :
         fetch_camera_timestamp_(false),
         enable_ieee_1588_ptp_(false),
         enable_hardware_trigger_(false),
-        enable_split_laser_(false)
+        enable_split_laser_(false),
+        enable_reverse_x_(false),
+        enable_reverse_y_(false)
 
 {}
 
@@ -224,6 +226,12 @@ void PylonCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
     }
     if (nh.hasParam("enable_split_laser")){
         nh.getParam("enable_split_laser",enable_split_laser_);
+    }
+    if (nh.hasParam("reverse_x")){
+        nh.getParam("reverse_x",enable_reverse_x_);
+    }
+    if (nh.hasParam("reverse_y")){
+        nh.getParam("reverse_y",enable_reverse_y_);
     }
     nh.param<double>("exposure_search_timeout", exposure_search_timeout_, 5.);
     nh.param<double>("auto_exposure_upper_limit", auto_exp_upper_lim_, 10000000.);
