@@ -73,8 +73,6 @@ PylonCameraNode::PylonCameraNode()
       pylon_camera_(nullptr),
       it_(new image_transport::ImageTransport(nh_)),
       img_raw_pub_(it_->advertiseCamera(ros::this_node::getNamespace() + "/image_raw", 1)),
-      img_raw_pub_no_laser_(it_->advertiseCamera(ros::this_node::getNamespace() + "/image_raw_no_laser", 1)),
-      img_raw_pub_with_laser_(it_->advertiseCamera(ros::this_node::getNamespace() + "/image_raw_with_laser", 1)),
       img_rect_pub_(nullptr),
       grab_imgs_raw_as_(
           nh_,
@@ -97,6 +95,17 @@ PylonCameraNode::PylonCameraNode()
     diagnostics_updater_.add("camera_availability", this, &PylonCameraNode::create_diagnostics);
     diagnostics_updater_.add("intrinsic_calibration", this, &PylonCameraNode::create_camera_info_diagnostics);
     diagnostics_trigger_ = nh_.createTimer(ros::Duration(2), &PylonCameraNode::diagnostics_timer_callback_, this);
+
+    if (pylon_camera_parameter_set_.enable_split_laser_)
+    {
+        img_raw_pub_no_laser_ = it_->advertiseCamera(ros::this_node::getNamespace() + "/image_raw_no_laser", 1);
+        img_raw_pub_with_laser_ = it_->advertiseCamera(ros::this_node::getNamespace() + "/image_raw_with_laser", 1);
+    }
+    else 
+    {
+        //img_raw_pub_no_laser_ = it_->advertiseCamera(ros::this_node::getNamespace() + "/image_raw", 1);
+        //img_raw_pub_with_laser_ = it_->advertiseCamera(ros::this_node::getNamespace() + "/image_raw", 1);
+    }
 
     init();
 }

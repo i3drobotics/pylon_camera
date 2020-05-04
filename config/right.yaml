@@ -3,7 +3,7 @@ camera_frame: pylon_camera
 
 #  The DeviceUserID of the camera. If empty, the first camera found in the
 #  device list will be used
-device_user_id: ""
+device_user_id: "i3dr_phobos_r"
 
 #  The CameraInfo URL (Uniform Resource Locator) where the optional intrinsic
 #  camera calibration parameters are stored. This URL string will be parsed
@@ -47,12 +47,12 @@ frame_rate: 10.0
 ##########################################################################
 
 #  The exposure time in microseconds to be set after opening the camera.
-exposure: 30000.0
+exposure: 10000.0
 
 #  The target gain in percent of the maximal value the camera supports
 #  For USB-Cameras, the gain is in dB, for GigE-Cameras it is given in so
 #  called 'device specific units'.
-# gain: 0.5
+gain: 0
 
 #  Gamma correction of pixel intensity.
 #  Adjusts the brightness of the pixel values output by the camera's sensor
