@@ -37,11 +37,7 @@
 #include <pylon_camera/internal/pylon_camera.h>
 #include <pylon_camera/encoding_conversions.h>
 #include <sensor_msgs/image_encodings.h>
-#include <pylon/gige/PylonGigEIncludes.h>
-#include <pylon/gige/ActionTriggerConfiguration.h>
 
-bool ptp_set=false;
-double frame_rate=5;
 namespace pylon_camera
 {
 
@@ -279,117 +275,6 @@ void PylonCameraImpl<CameraTraitT>::enableContinuousAutoGain()
     }
 }
 
-
-template <typename CameraTraitT>
-bool PylonCameraImpl<CameraTraitT>::enableTimestampChunk()
-{
-    // Enable chunks in general
-    if (GenApi::IsWritable(cam_->ChunkModeActive))
-    {
-        cam_->ChunkModeActive.SetValue(true);
-       
-    }
-    else
-    {
-        ROS_ERROR( "The camera doesn't support chunk features, which are needed for timestamps");
-        return false;
-    }
-    // Enable time stamp chunks
-    cam_->ChunkSelector.SetValue(ChunkSelectorEnums::ChunkSelector_Timestamp);
-    cam_->ChunkEnable.SetValue(true);
-    /* As explained in grab(std::vector<uint8_t>& image, ros::Time& stamp) below,
-     * a small GenICam node map is required for accessing chunk data each time.
-     * The node maps are usually created dynamically when StartGrabbing() is called.
-     * To avoid a delay caused by node map creation,
-     * we create a static pool of node maps once before grabbing.
-     */
-
-    cam_->StaticChunkNodeMapPoolSize = cam_->MaxNumBuffer.GetValue();
-    return true;
-}
-template <typename CameraTraitT>
-bool PylonCameraImpl<CameraTraitT>::enableIEEE1588PTP()
-{
-    if (GenApi::IsWritable(cam_->GevIEEE1588)){
-      cam_->GevIEEE1588.SetValue(true);
-      ROS_INFO_STREAM("PTP Enabled");
-      ROS_INFO_STREAM(cam_->GevTimestampTickFrequency.GetValue());
-      cam_->GevIEEE1588DataSetLatch.Execute();
-     // ROS_INFO_STREAM(cam_->GevIEEE1588StatusLatched.GetValue());
-      while(cam_->GevIEEE1588StatusLatched.GetValue()!=(GevIEEE1588StatusLatchedEnums::GevIEEE1588StatusLatched_Slave)){
-                ROS_INFO_STREAM("Waiting to Enter Slave Mode");
-                sleep(1);
-          cam_->GevIEEE1588DataSetLatch.Execute();
-      }
-
-       ROS_INFO_STREAM(cam_->GevIEEE1588Status.GetValue());
-       
-    //    cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_FrameStart);
-    //    cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_Off);
-    //    cam_->SyncFreeRunTimerStartTimeLow.SetValue(0); 
-    //    cam_->SyncFreeRunTimerStartTimeHigh.SetValue(0);
-    //    cam_->SyncFreeRunTimerTriggerRateAbs.SetValue(frame_rate);
-    //    cam_->SyncFreeRunTimerUpdate.Execute();
-    //    cam_->SyncFreeRunTimerEnable.SetValue(true);
-
-    //   cam_->AcquisitionMode.SetValue(AcquisitionModeEnums::AcquisitionMode_Continuous);
-    //   cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_AcquisitionStart);
-    //   cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_On);
-    //   cam_->AcquisitionFrameCount.SetValue(5);
-    //   cam_->TriggerSource.SetValue(TriggerSourceEnums::TriggerSource_Action1);
-    //   cam_->ActionSelector.SetValue(1);
-    //   cam_->ActionDeviceKey.SetValue(4711);
-    //   cam_->ActionGroupKey.SetValue(1);
-    //   cam_->ActionGroupMask.SetValue(0xffffffff);
-    //   Pylon::CTlFactory& tlFactory = Pylon::CTlFactory::GetInstance();
-    //   Pylon::IGigETransportLayer *pTL = dynamic_cast<Pylon::IGigETransportLayer*>(tlFactory.CreateTl(Pylon::BaslerGigEDeviceClass));
-    //   while (1)
-    //   {
-      
-    //   pTL->IssueActionCommand(4711, 1, 0xffffffff, "255.255.255.255");
-    //   sleep(0.2);
-    //   }
-      
-      
-
-
-
-    //   cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_FrameStart);
-    //   cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_Off);
-      //   ROS_INFO_STREAM("trigger mode on");
-     //  ROS_INFO_STREAM(cam_->GevIEEE1588OffsetFromMaster.GetValue());
-    //    ROS_INFO_STREAM("Camera_clock_id:"+cam_->GevIEEE1588ClockId.GetValue());
-    //    ROS_INFO_STREAM("Master_clock_id:"+cam_->GevIEEE1588ParentClockId.GetValue());
-
-    }
-    else{
-        ROS_ERROR("The camere doesn't support IEEE_1588_PTP");
-        return false;
-    } 
-    
-
-    return true;
-}
-
-template <typename CameraTraitT>
-bool PylonCameraImpl<CameraTraitT>::enableHardwareTrigger(){
-    cam_->AcquisitionMode.SetValue(AcquisitionModeEnums::AcquisitionMode_Continuous);
-    cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_AcquisitionStart);
-    cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_Off);
-    // Disable the acquisition frame rate parameter (this will disable the camera’s
-    // internal frame rate control and allow you to control the frame rate with
-    // external frame start trigger signals)
-    cam_->AcquisitionFrameRateEnable.SetValue(false);
-    cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_FrameStart);
-    cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_On);
-    cam_->TriggerSource.SetValue (TriggerSourceEnums::TriggerSource_Line1);
-    cam_->TriggerActivation.SetValue(TriggerActivationEnums::TriggerActivation_RisingEdge);
-    cam_->ExposureMode.SetValue(ExposureModeEnums::ExposureMode_Timed);
-    ROS_INFO_STREAM("HARDWARE Trigger");
-   
-    return true;
-}
-
 template <typename CameraTraitT>
 void PylonCameraImpl<CameraTraitT>::disableAllRunningAutoBrightessFunctions()
 {
@@ -438,39 +323,15 @@ bool PylonCameraImpl<CameraTraitT>::startGrabbing(const PylonCameraParameter& pa
         {
             setShutterMode(parameters.shutter_mode_);
         }
-         if ( parameters.frameRate() )
-        {
-           if ( parameters.frameRate() < 0 && parameters.frameRate() != -1 )
-             {
-                frame_rate = 5.0;
-      
-             }else
-             {
-                frame_rate=parameters.frameRate();
-             }
-           //ROS_INFO_STREAM(frame_rate);
-         }
-        
-        if (parameters.enable_ieee_1588_ptp_){
-            ptp_set=true;
-           
-            enableIEEE1588PTP();
-        }  
-        
-        if (parameters.fetch_camera_timestamp_) {
-           
-            enableTimestampChunk();
-        }
-        if (parameters.enable_hardware_trigger_){
-            enableHardwareTrigger();
-        }
+
         available_image_encodings_ = detectAvailableImageEncodings();
         if ( !setImageEncoding(parameters.imageEncoding()) )
         {
             return false;
         }
-         ROS_INFO_STREAM("Before startGrabbing: ");
-        cam_->StartGrabbing();
+
+        cam_->StartGrabbing(Pylon::EGrabStrategy::GrabStrategy_LatestImageOnly); //TODO set this with parameter
+        
         user_output_selector_enums_ = detectAndCountNumUserOutputs();
         device_user_id_ = cam_->DeviceUserID.GetValue();
         img_rows_ = static_cast<size_t>(cam_->Height.GetValue());
@@ -498,56 +359,6 @@ bool PylonCameraImpl<CameraTraitT>::startGrabbing(const PylonCameraParameter& pa
     }
     return true;
 }
-
-template <typename CameraTrait>
-bool PylonCameraImpl<CameraTrait>::grab(std::vector<uint8_t>& image, ros::Time& stamp)
-{
-    
-    Pylon::CGrabResultPtr ptr_grab_result;
-    if ( !grab(ptr_grab_result) )
-    {
-        ROS_ERROR("Error: Grab was not successful");
-        return false;
-    }
-
-    const uint8_t *pImageBuffer = reinterpret_cast<uint8_t*>(ptr_grab_result->GetBuffer());
-    image.assign(pImageBuffer, pImageBuffer + img_size_byte_);
-
-    /* Get pointer to the chunkTimestamp via the chunk data node map.
-     * To avoid delay caused by repeated dynamic road map creation,
-     * we create a static pool of node maps once at startup in enableTimestampChunk() above,
-     * as explained in Grab_ChunkImage.cpp of pylon C++ Sample code.
-     */
-    GenApi::CIntegerPtr chunkTimestamp(ptr_grab_result->GetChunkDataNodeMap().GetNode( "ChunkTimestamp"));
-    if (GenApi::IsReadable(chunkTimestamp))
-    {
-        uint64_t chunckTimestampCopy = chunkTimestamp->GetValue();
-        /* chunckTimestamp is based on a counter that counts the number of clock ticks generated by the camera.
-         * The unit of each tick is 8ns. So, we need to multiply the variable by 8.
-         * Note that multiplied value will wrap around from 0 if chunckTimestamp >= 2^61,
-         * or roughly 26687 days after the camera setup.
-         * when ptp is enabled the tick will be equilivant to 1ns so no need for multiplying
-         *  */
-         
-        //to be changed
-        if (!ptp_set){
-        chunckTimestampCopy <<= 3;
-        }
-        stamp.fromNSec(chunckTimestampCopy);
-   
-    }
-    else
-    {
-        ROS_WARN("Error: unable to read time stamp from camera");
-        return false;
-    }
-
-    if ( !is_ready_ )
-        is_ready_ = true;
-
-    return true;
-}
-
 
 template <typename CameraTrait>
 bool PylonCameraImpl<CameraTrait>::grab(std::vector<uint8_t>& image)
@@ -857,7 +668,7 @@ bool PylonCameraImpl<CameraTraitT>::setROI(const sensor_msgs::RegionOfInterest t
             cam_->OffsetX.SetValue(offset_x_to_set);
             cam_->OffsetY.SetValue(offset_y_to_set);
             reached_roi = currentROI();
-            cam_->StartGrabbing();
+            cam_->StartGrabbing(Pylon::EGrabStrategy::GrabStrategy_LatestImageOnly); //TODO set this with parameter
             img_cols_ = static_cast<size_t>(cam_->Width.GetValue());
             img_rows_ = static_cast<size_t>(cam_->Height.GetValue());
             img_size_byte_ =  img_cols_ * img_rows_ * imagePixelDepth();
@@ -876,44 +687,6 @@ bool PylonCameraImpl<CameraTraitT>::setROI(const sensor_msgs::RegionOfInterest t
                 << "(width, height, x_offset, y_offset) to:  (" << width_to_set << ", "
                 << height_to_set << ", " << offset_x_to_set << ", " << offset_y_to_set <<
                 ") occurred: "
-                << e.GetDescription());
-        return false;
-    }
-    return true;
-}
-
-template <typename CameraTraitT>
-bool PylonCameraImpl<CameraTraitT>::setReverseX(bool enable)
-{
-    try
-    {
-        if ( GenApi::IsAvailable(cam_->ReverseX)) {
-            cam_->ReverseX.SetValue(enable);
-        }
-    }
-    catch ( const GenICam::GenericException &e )
-    {
-        ROS_ERROR_STREAM("An exception while setting reverse x to"
-                << enable << " occurred: "
-                << e.GetDescription());
-        return false;
-    }
-    return true;
-}
-
-template <typename CameraTraitT>
-bool PylonCameraImpl<CameraTraitT>::setReverseY(bool enable)
-{
-    try
-    {
-        if ( GenApi::IsAvailable(cam_->ReverseY)) {
-            cam_->ReverseY.SetValue(enable);
-        }
-    }
-    catch ( const GenICam::GenericException &e )
-    {
-        ROS_ERROR_STREAM("An exception while setting reverse y to"
-                << enable << " occurred: "
                 << e.GetDescription());
         return false;
     }
@@ -947,7 +720,7 @@ bool PylonCameraImpl<CameraTraitT>::setBinningX(const size_t& target_binning_x,
             }
             cam_->BinningHorizontal.SetValue(binning_x_to_set);
             reached_binning_x = currentBinningX();
-            cam_->StartGrabbing();
+            cam_->StartGrabbing(Pylon::EGrabStrategy::GrabStrategy_LatestImageOnly); //TODO set this with parameter
             img_cols_ = static_cast<size_t>(cam_->Width.GetValue());
             img_size_byte_ =  img_cols_ * img_rows_ * imagePixelDepth();
         }
@@ -994,7 +767,7 @@ bool PylonCameraImpl<CameraTraitT>::setBinningY(const size_t& target_binning_y,
             }
             cam_->BinningVertical.SetValue(binning_y_to_set);
             reached_binning_y = currentBinningY();
-            cam_->StartGrabbing();
+            cam_->StartGrabbing(Pylon::EGrabStrategy::GrabStrategy_LatestImageOnly); //TODO set this with parameter
             img_rows_ = static_cast<size_t>(cam_->Height.GetValue());
             img_size_byte_ =  img_cols_ * img_rows_ * imagePixelDepth();
         }
@@ -1062,13 +835,6 @@ bool PylonCameraImpl<CameraTraitT>::setExposure(const float& target_exposure,
 template <typename CameraTraitT>
 bool PylonCameraImpl<CameraTraitT>::setAutoflash(
                         const std::map<int, bool> flash_on_lines)
-{
-    ROS_ERROR_STREAM("Not implemented for this camera type");
-    return false;
-}
-
-template <typename CameraTraitT>
-bool PylonCameraImpl<CameraTraitT>::getLineStatus(int line_num)
 {
     ROS_ERROR_STREAM("Not implemented for this camera type");
     return false;

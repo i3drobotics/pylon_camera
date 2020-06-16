@@ -58,20 +58,15 @@ PylonCameraParameter::PylonCameraParameter() :
         brightness_continuous_(false),
         exposure_auto_(true),
         gain_auto_(true),
+        hardware_trigger_given_(false),
+        hardware_trigger_(false),
         // #########################
         exposure_search_timeout_(5.),
         auto_exp_upper_lim_(0.0),
         mtu_size_(3000),
         inter_pkg_delay_(1000),
         shutter_mode_(SM_DEFAULT),
-        auto_flash_(false),
-        fetch_camera_timestamp_(false),
-        enable_ieee_1588_ptp_(false),
-        enable_hardware_trigger_(false),
-        enable_split_laser_(false),
-        enable_reverse_x_(false),
-        enable_reverse_y_(false)
-
+        auto_flash_(false)
 {}
 
 PylonCameraParameter::~PylonCameraParameter()
@@ -86,7 +81,6 @@ void PylonCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
     if ( nh.hasParam("frame_rate") )
     {
         nh.getParam("frame_rate", frame_rate_);
-        //ROS_INFO("FRAME RATE: %f",frame_rate_);
     }
 
     nh.param<std::string>("camera_info_url", camera_info_url_, "");
@@ -201,7 +195,7 @@ void PylonCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
                 nh.getParam("brightness_continuous", brightness_continuous_);
                 std::cout << "brightness is continuous" << std::endl;
             }
-           if ( nh.hasParam("exposure_auto") )
+            if ( nh.hasParam("exposure_auto") )
             {
                 nh.getParam("exposure_auto", exposure_auto_);
                 std::cout << "exposure is set to auto" << std::endl;
@@ -213,26 +207,12 @@ void PylonCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
             }
         }
     }
+    hardware_trigger_given_ = nh.hasParam("hardware_trigger");
+    if( hardware_trigger_given_ ){
+        nh.getParam("hardware_trigger", hardware_trigger_);
+    }
     // ##########################
-    if ( nh.hasParam("fetch_camera_timestamp"))
-    {
-        nh.getParam("fetch_camera_timestamp", fetch_camera_timestamp_);
-    }
-    if( nh.hasParam("enable_ieee_1588_ptp")){
-        nh.getParam("enable_ieee_1588_ptp",enable_ieee_1588_ptp_);
-    }
-    if( nh.hasParam("enable_hardware_trigger")){
-        nh.getParam("enable_hardware_trigger",enable_hardware_trigger_);
-    }
-    if (nh.hasParam("enable_split_laser")){
-        nh.getParam("enable_split_laser",enable_split_laser_);
-    }
-    if (nh.hasParam("reverse_x")){
-        nh.getParam("reverse_x",enable_reverse_x_);
-    }
-    if (nh.hasParam("reverse_y")){
-        nh.getParam("reverse_y",enable_reverse_y_);
-    }
+
     nh.param<double>("exposure_search_timeout", exposure_search_timeout_, 5.);
     nh.param<double>("auto_exposure_upper_limit", auto_exp_upper_lim_, 10000000.);
 

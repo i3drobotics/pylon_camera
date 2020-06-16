@@ -1,6 +1,0 @@
-{
-    "python.autoComplete.extraPaths": [
-        "/home/i3dr/Documents/SBRI/i3dr_sbri_rosinstall/devel/lib/python2.7/dist-packages",
-        "/opt/ros/kinetic/lib/python2.7/dist-packages"
-    ]
-}

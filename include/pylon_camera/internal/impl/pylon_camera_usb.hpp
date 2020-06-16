@@ -52,8 +52,14 @@ struct USBCameraTrait
     typedef double AutoTargetBrightnessValueType;
     typedef Basler_UsbCameraParams::ShutterModeEnums ShutterModeEnums;
     typedef Basler_UsbCameraParams::UserOutputSelectorEnums UserOutputSelectorEnums;
-    typedef Basler_UsbCameraParams::ChunkSelectorEnums ChunkSelectorEnums;
-    
+
+    typedef Basler_UsbCameraParams::ExposureModeEnums ExposureModeEnums;
+    typedef Basler_UsbCameraParams::TriggerSelectorEnums TriggerSelectorEnums;
+    typedef Basler_UsbCameraParams::TriggerModeEnums TriggerModeEnums;
+    typedef Basler_UsbCameraParams::AcquisitionModeEnums AcquisitionModeEnums;
+    typedef Basler_UsbCameraParams::TriggerSourceEnums TriggerSourceEnums;
+    typedef Basler_UsbCameraParams::TriggerActivationEnums TriggerActivationEnums;
+
     static inline AutoTargetBrightnessValueType convertBrightness(const int& value)
     {
         return value / 255.0;
@@ -72,7 +78,23 @@ bool PylonUSBCamera::applyCamSpecificStartupSettings(const PylonCameraParameter&
         cam_->UserSetSelector.SetValue(Basler_UsbCameraParams::UserSetSelector_Default);
         cam_->UserSetLoad.Execute();
         // UserSetSelector_Default overrides Software Trigger Mode !!
-        cam_->TriggerSource.SetValue(Basler_UsbCameraParams::TriggerSource_Software);
+        if (parameters.hardware_trigger_){
+            cam_->AcquisitionMode.SetValue(AcquisitionModeEnums::AcquisitionMode_Continuous);
+            cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_FrameBurstStart);
+            cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_Off);
+            // Disable the acquisition frame rate parameter (this will disable the camera’s
+            // internal frame rate control and allow you to control the frame rate with
+            // external frame start trigger signals)
+            cam_->AcquisitionFrameRateEnable.SetValue(false);
+            cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_FrameStart);
+            cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_On);
+            cam_->TriggerSource.SetValue (TriggerSourceEnums::TriggerSource_Line1);
+            cam_->TriggerActivation.SetValue(TriggerActivationEnums::TriggerActivation_RisingEdge);
+            cam_->ExposureMode.SetValue(ExposureModeEnums::ExposureMode_Timed);
+            ROS_INFO("HARDWARE TRIGGER: Enabled");
+        } else {
+            cam_->TriggerSource.SetValue(Basler_UsbCameraParams::TriggerSource_Software);
+        }
         cam_->TriggerMode.SetValue(Basler_UsbCameraParams::TriggerMode_On);
 
          /* Thresholds for the AutoExposure Functions:
@@ -154,6 +176,7 @@ bool PylonUSBCamera::setupSequencer(const std::vector<float>& exposure_times,
         cam_->SequencerPathSelector.SetValue(0);
         cam_->SequencerSetNext.SetValue(initial_set);
         cam_->SequencerTriggerSource.SetValue(Basler_UsbCameraParams::SequencerTriggerSource_SoftwareSignal1);
+        //cam_->SequencerTriggerSource.SetValue(Basler_UsbCameraParams::SequencerTriggerSource_Line1);
         // advance on Frame Start
         cam_->SequencerPathSelector.SetValue(1);
         cam_->SequencerTriggerSource.SetValue(Basler_UsbCameraParams::SequencerTriggerSource_FrameStart);
@@ -332,6 +355,24 @@ USBCameraTrait::AutoTargetBrightnessType& PylonUSBCamera::autoTargetBrightness()
     {
         throw std::runtime_error("Error while accessing AutoTargetBrightness in PylonUSBCamera");
     }
+}
+
+template <>
+bool PylonUSBCamera::enableHardwareTrigger(){
+    cam_->AcquisitionMode.SetValue(AcquisitionModeEnums::AcquisitionMode_Continuous);
+    cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_FrameBurstStart);
+    cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_Off);
+    // Disable the acquisition frame rate parameter (this will disable the camera’s
+    // internal frame rate control and allow you to control the frame rate with
+    // external frame start trigger signals)
+    cam_->AcquisitionFrameRateEnable.SetValue(false);
+    cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_FrameStart);
+    cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_On);
+    cam_->TriggerSource.SetValue (TriggerSourceEnums::TriggerSource_Line1);
+    cam_->TriggerActivation.SetValue(TriggerActivationEnums::TriggerActivation_RisingEdge);
+    cam_->ExposureMode.SetValue(ExposureModeEnums::ExposureMode_Timed);
+    ROS_INFO("HARDWARE TRIGGER: Enabled");
+    return true;
 }
 
 template <>

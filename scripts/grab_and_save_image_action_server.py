@@ -96,6 +96,7 @@ class GrabAndSaveImageActionServers():
         grab_imgs_result = action_client.get_result()
 
         grab_and_save_img_result = GrabAndSaveImageResult()
+
         if grab_imgs_result is not None and grab_imgs_result.success:
             filename = grab_and_save_img_goal.img_storage_path_and_name
             try:

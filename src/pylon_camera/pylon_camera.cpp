@@ -114,10 +114,10 @@ PylonCamera* createFromDevice(PYLON_CAM_TYPE cam_type, Pylon::IPylonDevice* devi
     {
         case GIGE:
             return new PylonGigECamera(device);
-        //case USB:
-          //  return new PylonUSBCamera(device);
-        //case DART:
-          //  return new PylonDARTCamera(device);
+        case USB:
+            return new PylonUSBCamera(device);
+        case DART:
+            return new PylonDARTCamera(device);
         case UNKNOWN:
         default:
             return nullptr;

@@ -226,6 +226,16 @@ public:
      */
     bool exposure_auto_;
     bool gain_auto_;
+
+    /**
+     * Flag which indicates if the hardware trigger is provided and hence
+     * should be set during startup
+     */
+    bool hardware_trigger_given_;
+    /**
+     * External hardware trigger enable/disable
+     */
+    bool hardware_trigger_;
     // #######################################################################
 
     /**
@@ -267,44 +277,6 @@ public:
      * calibration matrices are available
      */
     bool has_intrinsic_calib_;
-    /**
-     * Flag that controls how the time stamp inside each image's header is determined.
-     * If the flag is set to false, the timestamp corresponds to the ROS time
-     * once the image was received by the host computer.
-     * If the flag is set to true, the time stamp from the camera,
-     * which contains a stamp of when the frame acquision was triggered, is fetched.
-     * Set this flag to true only if the camera's clock is synchronized
-     * with the clock of the host computer (through PTP IEEE-1588).
-     */
-    bool fetch_camera_timestamp_;
-    /**
-     * Flag indicates whether IEEE1588PTP networking protocol is enabled or no.
-     * Default: false.
-     */
-     
-    bool enable_ieee_1588_ptp_;
-    /** 
-     * flag to enable hardware trigger acquisition
-     * Default: false.
-    */
-    bool enable_hardware_trigger_;
-    /**
-     * flag to enable split laser monitoring. Line 3 used to monitor if laser is on and split image frames in to with laser or no laser)
-     * Default: false
-    */
-    bool enable_split_laser_;
-
-    /**
-     * flag to enable reverse x to flip the image in the x axis
-     * Default: false
-    */
-    bool enable_reverse_x_;
-
-    /**
-     * flag to enable reverse y to flip the image in the y axis
-     * Default: false
-    */
-    bool enable_reverse_y_;
 
     /**
      * Flag that indicates if the camera has a flash connected which should be on on exposure

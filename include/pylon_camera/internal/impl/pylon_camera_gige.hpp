@@ -52,18 +52,16 @@ struct GigECameraTrait
     typedef int64_t AutoTargetBrightnessValueType;
     typedef Basler_GigECameraParams::ShutterModeEnums ShutterModeEnums;
     typedef Basler_GigECamera::UserOutputSelectorEnums UserOutputSelectorEnums;
-    typedef Basler_GigECamera::ChunkSelectorEnums ChunkSelectorEnums;
-    typedef Basler_GigECamera::GevIEEE1588StatusEnums GevIEEE1588StatusEnums;
-    typedef Basler_GigECamera::GevIEEE1588StatusLatchedEnums GevIEEE1588StatusLatchedEnums;
     typedef Basler_GigECamera::LineSelectorEnums LineSelectorEnums;
     typedef Basler_GigECamera::LineModeEnums LineModeEnums;
     typedef Basler_GigECamera::LineSourceEnums LineSourceEnums;
+
+    typedef Basler_GigECamera::ExposureModeEnums ExposureModeEnums;
     typedef Basler_GigECamera::TriggerSelectorEnums TriggerSelectorEnums;
     typedef Basler_GigECamera::TriggerModeEnums TriggerModeEnums;
     typedef Basler_GigECamera::AcquisitionModeEnums AcquisitionModeEnums;
     typedef Basler_GigECamera::TriggerSourceEnums TriggerSourceEnums;
     typedef Basler_GigECamera::TriggerActivationEnums TriggerActivationEnums;
-    typedef Basler_GigECamera::ExposureModeEnums ExposureModeEnums;
 
     static inline AutoTargetBrightnessValueType convertBrightness(const int& value)
     {
@@ -73,17 +71,6 @@ struct GigECameraTrait
 
 typedef PylonCameraImpl<GigECameraTrait> PylonGigECamera;
 
-template <>
-bool PylonGigECamera::getLineStatus(int line_num){
-    if (line_num == 1){
-        cam_->LineSelector.SetValue(Basler_GigECameraParams::LineSelector_Line1);
-        cam_->LineMode.SetValue(Basler_GigECameraParams::LineMode_Input);
-    } else if (line_num == 3){
-        cam_->LineSelector.SetValue(Basler_GigECameraParams::LineSelector_Line3);
-        cam_->LineMode.SetValue(Basler_GigECameraParams::LineMode_Input);
-    }
-    return(cam_->LineStatus.GetValue());
-}
 
 template <>
 bool PylonGigECamera::setAutoflash(const std::map<int, bool> flash_on_lines)
@@ -150,8 +137,23 @@ bool PylonGigECamera::applyCamSpecificStartupSettings(const PylonCameraParameter
         cam_->UserSetSelector.SetValue(Basler_GigECameraParams::UserSetSelector_Default);
         cam_->UserSetLoad.Execute();
         // UserSetSelector_Default overrides Software Trigger Mode !!
-        
-        cam_->TriggerSource.SetValue(Basler_GigECameraParams::TriggerSource_Software);
+        if (parameters.hardware_trigger_){
+            cam_->AcquisitionMode.SetValue(AcquisitionModeEnums::AcquisitionMode_Continuous);
+            cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_AcquisitionStart);
+            cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_Off);
+            // Disable the acquisition frame rate parameter (this will disable the camera’s
+            // internal frame rate control and allow you to control the frame rate with
+            // external frame start trigger signals)
+            cam_->AcquisitionFrameRateEnable.SetValue(false);
+            cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_FrameStart);
+            cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_On);
+            cam_->TriggerSource.SetValue (TriggerSourceEnums::TriggerSource_Line1);
+            cam_->TriggerActivation.SetValue(TriggerActivationEnums::TriggerActivation_RisingEdge);
+            cam_->ExposureMode.SetValue(ExposureModeEnums::ExposureMode_Timed);
+            ROS_INFO("HARDWARE TRIGGER: Enabled");
+        } else {
+            cam_->TriggerSource.SetValue(Basler_GigECameraParams::TriggerSource_Software);
+        }
         cam_->TriggerMode.SetValue(Basler_GigECameraParams::TriggerMode_On);
 
         /* Thresholds for the AutoExposure Functions:
@@ -470,6 +472,24 @@ GigECameraTrait::AutoTargetBrightnessType& PylonGigECamera::autoTargetBrightness
     {
         throw std::runtime_error("Error while accessing AutoTargetValue in PylonGigECamera");
     }
+}
+
+template <>
+bool PylonGigECamera::enableHardwareTrigger(){
+    cam_->AcquisitionMode.SetValue(AcquisitionModeEnums::AcquisitionMode_Continuous);
+    cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_AcquisitionStart);
+    cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_Off);
+    // Disable the acquisition frame rate parameter (this will disable the camera’s
+    // internal frame rate control and allow you to control the frame rate with
+    // external frame start trigger signals)
+    cam_->AcquisitionFrameRateEnable.SetValue(false);
+    cam_->TriggerSelector.SetValue(TriggerSelectorEnums::TriggerSelector_FrameStart);
+    cam_->TriggerMode.SetValue(TriggerModeEnums::TriggerMode_On);
+    cam_->TriggerSource.SetValue (TriggerSourceEnums::TriggerSource_Line1);
+    cam_->TriggerActivation.SetValue(TriggerActivationEnums::TriggerActivation_RisingEdge);
+    cam_->ExposureMode.SetValue(ExposureModeEnums::ExposureMode_Timed);
+    ROS_INFO("HARDWARE TRIGGER: Enabled");
+    return true;
 }
 
 template <>

@@ -1,11 +1,14 @@
 ====
+**New Official Version of Driver available**
+====
+The new official driver (an extended version of this package with some bug-fixes and new functionality) is available at https://github.com/basler/pylon-ros-camera. 
+
+
+====
 **ROS-Driver for Basler Cameras**
 ====
 **developed by Magazino GmbH, using the pylon Software Camera Suite by Basler AG**
 
-.. image:: https://raw.githubusercontent.com/magazino/pylon_camera/indigo-devel/wiki_imgs/logos.png
-   :width: 130 %
-   :align: center
 
 This package offers many functions of the Basler pylon API inside the ROS-Framwork.
 
@@ -25,14 +28,6 @@ The default node operates in Software-Trigger Mode.
 This means that the image acquisition is triggered with a certain rate and the camera is not running in the continuous mode.
 
 The package opens either a predefined camera (using a given 'device_user_id' parameter) or, if no camera id is predefined the first camera device it can find.
-
-|
-
-******
-**Industrial 3D Robotics changes**
-******
-
-Added namespace functionality for changing the name of the cameras.
 
 |
 
@@ -94,8 +89,6 @@ All parameters are listed in the default config file:  ``config/default.yaml``
 
 - **frame_rate**
   The desired publisher frame rate if listening to the topics. This parameter can only be set once at start-up. Calling the GrabImages-Action can result in a higher frame rate.
-- **fetch_camera_timestamp**
-  Boolean set at start-up to choose which of {camera, host computer} is in charge of timestamping the image. If the camera's clock is synchronized with the clock of the host computer (e.g. through PTP IEEE-1588), setting this parameter to true improves the accuracy of the timestamps as this factors out network delays and IO delays due to a high CPU load.
 
 - **shutter_mode**
   Set mode of camera's shutter if the value is not empty. The supported modes are 'rolling', 'global' and 'global_reset'.

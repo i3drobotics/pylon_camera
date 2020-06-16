@@ -17,4 +17,3 @@ CATKIN_IGNORE
 *.idea
 *.pyc
 *.save
-.vscode

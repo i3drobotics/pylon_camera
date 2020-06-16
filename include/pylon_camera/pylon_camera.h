@@ -98,20 +98,7 @@ public:
      * @return true if all parameters could be sent to the camera.
      */
     virtual bool applyCamSpecificStartupSettings(const PylonCameraParameter& parameters) = 0;
-    /**
-     * Enables the chunk features to grab timestamp from the camera.
-     * @return true if timestamp chunk is successfully enabled
-     */
-    virtual bool enableTimestampChunk() = 0;
-    /**
-     * Enables the camera to use IEEE1588PTP.
-     * @return true if IEEE1588PTP is successfully enabled
-     */
-    virtual bool enableIEEE1588PTP()= 0;
-    /**
-     * Enables Hardware triggering for frame aquisition
-     */
-    virtual bool enableHardwareTrigger()=0;
+
     /**
      * Initializes the internal parameters of the PylonCamera instance.
      * @param parameters The PylonCameraParameter set to use
@@ -133,19 +120,12 @@ public:
      * @return true if the image was grabbed successfully.
      */
     virtual bool grab(uint8_t* image) = 0;
-    /**
-     * Grab a camera frame with its time stamp and copy the result into image
-     * @param image reference to the output image
-     * @param stamp reference to the output time stamp
-     * @return true if image and time stamp were grabbed successfully.
-     */
-    virtual bool grab(std::vector<uint8_t>& image, ros::Time& stamp) = 0;
+
     /**
      * @brief sets shutter mode for the camera (rolling or global_reset)
      * @param mode
      * @return
      */
-
     virtual bool setShutterMode(const pylon_camera::SHUTTER_MODE& mode) = 0;
 
     /**
@@ -156,20 +136,6 @@ public:
      */
     virtual bool setROI(const sensor_msgs::RegionOfInterest target_roi,
 			sensor_msgs::RegionOfInterest& reached_roi) = 0;
-
-    /**
-     * Update the reverse x setting
-     * @param enable the target reverse x setting
-     * @return true if the targeted reverse x setting could be reached
-     */
-    virtual bool setReverseX(bool enable) = 0;
-
-    /**
-     * Update the reverse t setting
-     * @param enable the target reverse y setting
-     * @return true if the targeted reverse y setting could be reached
-     */
-    virtual bool setReverseY(bool enable) = 0;
     
     /**
      * Sets the target horizontal binning_x factor
@@ -230,13 +196,6 @@ public:
      * @return false if a communication error occurred or true otherwise.
      */
     virtual bool setGain(const float& target_gain, float& reached_gain) = 0;
-
-    /**
-     * Get the status of line
-     * @param line_num line number to get the status of
-     * @return true if HIGH, false if LOW
-     */
-    virtual bool getLineStatus(int line_num) = 0;
 
     /**
      * Sets the target gamma value
@@ -404,6 +363,11 @@ public:
      * Enables the continuous auto gain mode
      */
     virtual void enableContinuousAutoGain() = 0;
+
+    /**
+     * Enables hardware trigger mode
+     */
+    virtual bool enableHardwareTrigger() = 0;
 
     /**
      * Get the camera type. Currently supported cameras are USB, DART and GigE

@@ -44,7 +44,6 @@
 #include <pylon_camera/pylon_camera_parameter.h>
 #include <pylon_camera/pylon_camera.h>
 
-#include <camera_control_msgs/GetLineStatus.h>
 #include <camera_control_msgs/SetBool.h>
 #include <camera_control_msgs/SetBinning.h>
 #include <camera_control_msgs/SetBrightness.h>
@@ -151,20 +150,6 @@ protected:
      */
     bool setROI(const sensor_msgs::RegionOfInterest target_roi,
                 sensor_msgs::RegionOfInterest& reached_roi);
-
-    /**
-     * Update the reverse x setting
-     * @param enable the target reverse x setting
-     * @return true if the targeted reverse x setting could be reached
-     */
-    bool setReverseX(bool enable);
-
-    /**
-     * Update the reverse t setting
-     * @param enable the target reverse y setting
-     * @return true if the targeted reverse y setting could be reached
-     */
-    bool setReverseY(bool enable);
     
     /**
      * Update the horizontal binning_x factor to get downsampled images
@@ -293,25 +278,10 @@ protected:
                              camera_control_msgs::SetSleeping::Response &res);
 
     /**
-     * Callback that get the status of line
-     * @param req request
-     * @param res response
-     * @return true = HIGH, false = LOW
-     */
-    bool getLineStatusCallback(camera_control_msgs::GetLineStatus::Request &req,
-                                camera_control_msgs::GetLineStatus::Response &res);
-
-    /**
      * Returns true if the camera was put into sleep mode
      * @return true if in sleep mode
      */
     bool isSleeping();
-
-    /**
-     * Returns true if line status is HIGH
-     * @return true if line status is HIGH
-     */
-    bool getLineStatus(int line_num); 
 
     /**
      * Generates the subset of points on which the brightness search will be
@@ -404,15 +374,12 @@ protected:
     ros::ServiceServer set_gamma_srv_;
     ros::ServiceServer set_brightness_srv_;
     ros::ServiceServer set_sleeping_srv_;
-    ros::ServiceServer get_line_status_srv_;
     std::vector<ros::ServiceServer> set_user_output_srvs_;
 
     PylonCamera* pylon_camera_;
 
     image_transport::ImageTransport* it_;
     image_transport::CameraPublisher img_raw_pub_;
-    image_transport::CameraPublisher img_raw_pub_no_laser_;
-    image_transport::CameraPublisher img_raw_pub_with_laser_;
 
     ros::Publisher* img_rect_pub_;
     image_geometry::PinholeCameraModel* pinhole_model_;
@@ -429,8 +396,6 @@ protected:
     std::array<float, 256> brightness_exp_lut_;
 
     bool is_sleeping_;
-    bool line_1_status_;
-    bool line_3_status_;
     boost::recursive_mutex grab_mutex_;
 
     /// diagnostics:
