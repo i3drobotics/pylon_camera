@@ -1,0 +1,8 @@
+- git:
+    local-name: camera_control_msgs
+    uri: https://github.com/i3drobotics/camera_control_msgs.git
+    version: indigo-devel
+- git:
+    local-name: pylon_camera
+    uri: https://github.com/i3drobotics/pylon_camera.git
+    version: master
