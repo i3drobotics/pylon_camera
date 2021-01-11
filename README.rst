@@ -38,18 +38,18 @@ The package has been tested for ROS-Indigo and ROS-Kinetic.
 
 The pylon_camera-pkg requires the pylonSDK to be installed on your system. Please download and install the pylon debian package for your architecture from:
 
-``https://www.baslerweb.com/de/support/downloads/downloads-software/``
+``https://www.baslerweb.com/en/sales-support/downloads/software-downloads/#type=pylonsoftware;language=all;version=all;os=all``
 
 In order to build the package, you need to configure rosdep (i.e. the ROS command-line tool for checking and installing system dependencies for ROS packages) such that
 it knows how to resolve this dependency. This can be achieved by executing the following commands:
 
-``sudo sh -c 'echo "yaml https://raw.githubusercontent.com/magazino/pylon_camera/indigo-devel/rosdep/pylon_sdk.yaml " > /etc/ros/rosdep/sources.list.d/15-plyon_camera.list'``
+``sudo sh -c 'echo "yaml https://raw.githubusercontent.com/i3drobotics/pylon_camera/master/rosdep/pylon_sdk.yaml " > /etc/ros/rosdep/sources.list.d/15-plyon_camera.list'``
 
 ``rosdep update``
 
 Then, clone the pylon_camera-pkg, and the camera_control_msgs-pkg and install the pylon SDK in your catkin_ws:
 
-``cd ~/catkin_ws/src/ && git clone https://github.com/magazino/pylon_camera.git && git clone https://github.com/magazino/camera_control_msgs.git``
+``cd ~/catkin_ws/src/ && git clone https://github.com/i3drobotics/pylon_camera.git && git clone https://github.com/i3drobotics/camera_control_msgs.git``
 
 ``rosdep install --from-paths . --ignore-src --rosdistro=$ROS_DISTRO -y``
 
