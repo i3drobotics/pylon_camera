@@ -171,6 +171,17 @@ protected:
     bool setBinningY(const size_t& target_binning_y,
                      size_t& reached_binning_y);
 
+
+    /**
+     * Flip image along x axis
+     */ 
+    bool setReverseX(const bool& enable);
+
+    /**
+     * Flip image along y axis
+     */ 
+    bool setReverseY(const bool& enable);
+
     /**
      * Service callback for updating the cameras binning setting
      * @param req request

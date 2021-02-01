@@ -693,7 +693,6 @@ bool PylonCameraImpl<CameraTraitT>::setROI(const sensor_msgs::RegionOfInterest t
     return true;
 }
 
-
 template <typename CameraTraitT>
 bool PylonCameraImpl<CameraTraitT>::setBinningX(const size_t& target_binning_x,
                                                 size_t& reached_binning_x)
@@ -782,6 +781,46 @@ bool PylonCameraImpl<CameraTraitT>::setBinningY(const size_t& target_binning_y,
     {
         ROS_ERROR_STREAM("An exception while setting target vertical "
                 << "binning_y factor to " << target_binning_y << " occurred: "
+                << e.GetDescription());
+        return false;
+    }
+    return true;
+}
+
+template <typename CameraTraitT>
+bool PylonCameraImpl<CameraTraitT>::setReverseX(const bool& enable)
+{
+    try
+    {
+        if ( GenApi::IsAvailable(cam_->ReverseX) )
+        {
+            cam_->ReverseX.SetValue(enable);
+        }
+    }
+    catch ( const GenICam::GenericException &e )
+    {
+        ROS_ERROR_STREAM("An exception while setting reverse x "
+                << "to " << enable << " occurred: "
+                << e.GetDescription());
+        return false;
+    }
+    return true;
+}
+
+template <typename CameraTraitT>
+bool PylonCameraImpl<CameraTraitT>::setReverseY(const bool& enable)
+{
+    try
+    {
+        if ( GenApi::IsAvailable(cam_->ReverseY) )
+        {
+            cam_->ReverseY.SetValue(enable);
+        }
+    }
+    catch ( const GenICam::GenericException &e )
+    {
+        ROS_ERROR_STREAM("An exception while setting reverse x "
+                << "to " << enable << " occurred: "
                 << e.GetDescription());
         return false;
     }

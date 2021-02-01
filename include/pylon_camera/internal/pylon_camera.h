@@ -80,6 +80,9 @@ public:
     virtual bool setBinningY(const size_t& target_binning_y,
                              size_t& reached_binning_y);
 
+    virtual bool setReverseX(const bool& enable);
+    virtual bool setReverseY(const bool& enable);
+
     virtual bool setImageEncoding(const std::string& target_ros_encoding);
 
     virtual bool setExposure(const float& target_exposure, float& reached_exposure);

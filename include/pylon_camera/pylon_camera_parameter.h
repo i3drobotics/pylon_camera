@@ -131,6 +131,21 @@ public:
     bool binning_y_given_;
 
     /**
+     * Reverse image in x or y
+     */
+
+    bool reverse_x_;
+    bool reverse_y_;
+
+    /**
+     * Flags which indicate if the reverse values are provided and hence
+     * should be set during startup
+     */
+
+    bool reverse_x_given_;
+    bool reverse_y_given_;
+
+    /**
      * Factor that describes the image downsampling to speed up the exposure
      * search to find the desired brightness.
      * The smallest window height is img_rows/downsampling_factor

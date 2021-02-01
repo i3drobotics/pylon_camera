@@ -298,6 +298,14 @@ bool PylonCameraNode::startGrabbing()
         }
     }
 
+    if (pylon_camera_parameter_set_.reverse_x_given_){
+        setReverseX(pylon_camera_parameter_set_.reverse_x_);
+    }
+
+    if (pylon_camera_parameter_set_.reverse_y_given_){
+        setReverseY(pylon_camera_parameter_set_.reverse_y_);
+    }
+
     if ( pylon_camera_parameter_set_.binning_x_given_ )
     {
         size_t reached_binning_x;
@@ -1007,6 +1015,16 @@ bool PylonCameraNode::setROI(const sensor_msgs::RegionOfInterest target_roi,
     // step = full row length in bytes, img_size = (step * rows), imagePixelDepth
     // already contains the number of channels
     img_raw_msg_.step = img_raw_msg_.width * pylon_camera_->imagePixelDepth();
+    return true;
+}
+
+bool PylonCameraNode::setReverseX(const bool& enable){
+    pylon_camera_->setReverseX(enable);
+    return true;
+}
+
+bool PylonCameraNode::setReverseY(const bool& enable){
+    pylon_camera_->setReverseY(enable);
     return true;
 }
 

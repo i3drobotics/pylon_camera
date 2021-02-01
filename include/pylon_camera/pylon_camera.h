@@ -156,6 +156,16 @@ public:
                              size_t& reached_binning_y) = 0;
 
     /**
+     * Flip image along x axis
+     */ 
+    virtual bool setReverseX(const bool& enable) = 0;
+
+    /**
+     * Flip image along y axis
+     */ 
+    virtual bool setReverseY(const bool& enable) = 0;
+
+    /**
      * Detects the supported image pixel encodings of the camera an stores
      * them in a vector.
      * @return a list of strings describing the supported encodings in GenAPI

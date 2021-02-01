@@ -43,6 +43,10 @@ PylonCameraParameter::PylonCameraParameter() :
         binning_y_(1),
         binning_x_given_(false),
         binning_y_given_(false),
+        reverse_x_(false),
+        reverse_y_(false),
+        reverse_x_given_(false),
+        reverse_y_given_(false),
         downsampling_factor_exp_search_(1),
         // ##########################
         //  image intensity settings
@@ -87,6 +91,16 @@ void PylonCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
     if ( nh.hasParam("camera_info_url") )
     {
         nh.getParam("camera_info_url", camera_info_url_);
+    }
+
+    reverse_x_given_ = nh.hasParam("reverse_x");
+    if (reverse_x_given_) {
+        nh.getParam("reverse_x", reverse_x_);
+    }
+
+    reverse_y_given_ = nh.hasParam("reverse_y");
+    if (reverse_y_given_) {
+        nh.getParam("reverse_y", reverse_y_);
     }
 
     binning_x_given_ = nh.hasParam("binning_x");

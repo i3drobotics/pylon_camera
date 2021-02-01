@@ -96,6 +96,11 @@ bool PylonUSBCamera::applyCamSpecificStartupSettings(const PylonCameraParameter&
             cam_->TriggerSource.SetValue(Basler_UsbCameraParams::TriggerSource_Software);
         }
         cam_->TriggerMode.SetValue(Basler_UsbCameraParams::TriggerMode_On);
+        
+        // Set device link throughput to avoid data collision
+        // TODO find details of how device through put limit works
+        cam_->DeviceLinkThroughputLimitMode.SetValue(Basler_UsbCameraParams::DeviceLinkThroughputLimitMode_On);
+        cam_->DeviceLinkThroughputLimit.SetValue(100000000);
 
          /* Thresholds for the AutoExposure Functions:
           *  - lower limit can be used to get rid of changing light conditions
