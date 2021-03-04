@@ -1,9 +1,11 @@
 set(PYLON_ROOT $ENV{PYLON_ROOT})
 if (NOT DEFINED ENV{PYLON_ROOT})
-    set(PYLON_ROOT "/opt/pylon5")
+    execute_process(COMMAND bash "-c" "echo -n `find /opt -type f -name pylon-config`/../.." OUTPUT_VARIABLE PYLON_ROOT)
+    execute_process(COMMAND bash "-c" "echo -n `find /opt -type f -name pylon-config`" OUTPUT_VARIABLE _PYLON_CONFIG)
+else()
+    set(_PYLON_CONFIG "${PYLON_ROOT}/bin/pylon-config")
 endif()
 
-set(_PYLON_CONFIG "${PYLON_ROOT}/bin/pylon-config")
 if (EXISTS "${_PYLON_CONFIG}")
     set(Pylon_FOUND TRUE)
     execute_process(COMMAND ${_PYLON_CONFIG} --cflags-only-I OUTPUT_VARIABLE HEADERS_OUT)

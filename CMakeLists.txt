@@ -20,6 +20,9 @@ set(
 find_package(Pylon QUIET)
 if (NOT ${Pylon_FOUND})
     include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindPylon.cmake")
+    if (NOT ${Pylon_FOUND})
+        message(FATAL_ERROR "Failed to find Pylon")
+    endif()
 endif()
 find_package(
     catkin REQUIRED
